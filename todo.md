@@ -69,15 +69,15 @@ This script contains the brain of our app—it compares questions and outputs th
 - [x] **Create `matcher.py`:** Inside `server/`, create a file called `matcher.py`.
 - [x] **Write the logic:**
   1. [x] Clean the text (lowercase it, remove extra spaces).
-  2. [x] Write a function `calculate_fuzzy_score(q1, q2)` using `rapidfuzz` (e.g. `token_set_ratio`).
-  3. [x] Write a function `calculate_tfidf_score(questions_list, queries_list)` using `scikit-learn`'s TF-IDF vectorizer, utilizing Natural Language Processing (NLP) and information retrieval to convert unstructured text into a format that machine learning algorithms can understand.
-  4. [ ] Write a runner function `match_sheets(sheet1_df, sheet2_df, col1_name, col2_name, ans_col_name, threshold, top_k=3)` to pair rows, return the Top K matches for each query, and identify conflicts where multiple strong solutions exist.
+  2. [x] Write a function `calculate_fuzzy(q1, q2)` using `rapidfuzz` (e.g. `token_set_ratio`).
+  3. [x] Write a function `calculate_tfidf(questions_list, queries_list)` using `scikit-learn`'s TF-IDF vectorizer, utilizing Natural Language Processing (NLP) and information retrieval to convert unstructured text into a format that machine learning algorithms can understand.
+  4. [x] Write a runner function `match_sheets(sheet1_df, sheet2_df, col1_name, col2_name, ans_col_name, threshold, top_k=3)` to pair rows, return the Top K matches for each query, and identify conflicts where multiple strong solutions exist.
 
 ---
 
 ### Step 4: Write the Server Web Routes (`main.py`)
 FastAPI listens for requests sent by the browser (frontend), runs the matcher, and sends answers back.
-- [ ] **Create `main.py`:** Inside `server/`, create a file called `main.py`.
+- [x] **Create `main.py`:** Inside `server/`, create a file called `main.py`.
 - [ ] **Write these API Endpoints:**
   * `POST /api/upload`: Reads uploaded Excel files and returns their column names so the user can choose them.
   * `POST /api/match`: Takes the user's column choices, matching threshold, and `top_k` value, runs `matcher.py`, and returns results as an array of objects, each containing a list of matching solutions.

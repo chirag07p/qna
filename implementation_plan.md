@@ -91,15 +91,16 @@ Defines all Python dependencies:
 - `scikit-learn`: For TF-IDF keyword vectorization and cosine similarity (utilizing Natural Language Processing (NLP) and information retrieval to convert unstructured text into a format that machine learning algorithms can understand).
 - `sentence-transformers` *(optional)*: For high-quality semantic vector matching.
 
-#### [NEW] [matcher.py](file:///c:/Users/Chirag%20Pradhan/qna/backend/matcher.py)
-Implements the core approximation matching pipeline supporting multiple solutions:
-- Text cleaning (lowercase, strip, special character normalization).
-- TF-IDF vectorization utilizing Natural Language Processing (NLP) and information retrieval to convert unstructured text into a format that machine learning algorithms can understand.
-- Hybrid scoring function:
-  $$\text{Score} = w_1 \cdot \text{FuzzyTokenSetRatio} + w_2 \cdot \text{TFIDF-CosineSimilarity}$$
-- **Top-K Candidates Retrieval**: Finds and ranks the Top K (e.g. top 3 or 5) match candidates above the user-specified threshold.
-- Detailed threshold matching and "Conflict Detection" if multiple distinct answers score very close to each other.
-- Interface for modular semantic matching using sentence embeddings if enabled.
+#### [MODIFY] [matcher.py](file:///c:/Users/Chirag%20Pradhan/qna/server/matcher.py)
+Implements the core approximation matching pipeline:
+- **Clean Text**: Normalize queries and reference questions using a robust `cleaner` (lowercase, strip extra spaces, handle non-string/null cell values gracefully).
+- **TF-IDF + Cosine Similarity**: Leverage `scikit-learn` to calculate a batch similarity matrix for all query-reference pairs, returning a score in `[0.0, 100.0]`.
+- **Fuzzy Token Matching**: Calculate `rapidfuzz` `token_set_ratio` similarity between each query and reference question to handle typos, word orders, and partial phrases.
+- **Hybrid Similarity Scorer**:
+  $$\text{Hybrid Score} = 0.5 \times \text{Fuzzy Score} + 0.5 \times \text{TF-IDF Score}$$
+- **Top-K Retrieval**: Sort candidate matches by hybrid score in descending order, filtering out any matches below the user-defined `threshold`, and capping the results list at `top_k` (default 3).
+- **Conflict / Multi-Solution Detection**: If the top two retrieved matches both score above the threshold and their confidence scores differ by less than `5.0` points, mark the query row with `is_conflict = True` to highlight it for manual verification in the UI.
+- **Structure for Click-to-Swap**: Return `selected_match_idx = 0` (pointing to the highest-scoring candidate) by default, along with all original columns in a metadata object `original_row` so that the React UI can seamlessly support custom promotion/swapping.
 
 #### [NEW] [main.py](file:///c:/Users/Chirag%20Pradhan/qna/backend/main.py)
 Configures the FastAPI application, CORS middleware, and API endpoints:
