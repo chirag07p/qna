@@ -1,189 +1,152 @@
 # Implementation Plan - Excel Q&A Matching & Approximation System
 
-We will build a complete web application with a **Python FastAPI backend** and a **React + Vite frontend** to perform approximate matching between two Excel sheets (Question Sheet and Answer Sheet) and fetch the relevant answers. 
+We are building a complete web application with a **Python FastAPI backend** and a **React + Vite frontend** to perform approximate matching between two Excel sheets (Question Sheet and Answer Sheet) and fetch the relevant answers.
 
-The application will feature a hybrid text-matching pipeline (using string similarity, keyword overlaps, and optional sentence embeddings) to handle approximate queries (e.g., matching *"i am facing issue in..."* to *"error in..."*) and a high-end, responsive, glassmorphic UI for full interactive control.
-
----
-
-## User Review Required
-
-> [!IMPORTANT]
-> **Data Format & Column Selection**
-> To make this application production-grade and highly reusable, we will **not** hardcode sheet layouts or column names. Instead, the frontend will automatically parse uploaded Excel files and let the user select which columns contain:
-> 1. The **Questions** in Sheet 1 (the sheet to be filled).
-> 2. The **Reference Questions** in Sheet 2 (the knowledge base).
-> 3. The **Answers** in Sheet 2 (the knowledge base).
-> Please confirm if this generic column-mapping approach fits your workflow.
-
-> [!IMPORTANT]
-> **Multiple Solutions Support & Conflict Resolution**
-> When a single question has multiple possible matches/solutions (e.g., similar reference questions with different answers), we will support retrieving and ranking **Top K solutions** (default top 3).
-> We propose three export modes in the UI for users to choose how these are saved:
-> 1. **Best Match Only**: Exports only the single highest-scoring answer.
-> 2. **Multi-Column Export**: Appends multiple solution columns (e.g., `Answer 1`, `Answer 2`, `Answer 3`) to allow auditing side-by-side.
-> 3. **Merged Concatenation**: Concatenates multiple answers into a single Excel cell using custom bullet points (e.g., `[85%] Sol A \n[72%] Sol B`).
-> Please verify if this multi-solution design meets your needs.
-
-> [!TIP]
-> **Matching Algorithms & Resource Trade-offs**
-> We propose a hybrid matching pipeline with three tiered algorithms that can be adjusted in the UI:
-> 1. **Fuzzy String Matching (RapidFuzz)**: Extremely fast, great for spelling mistakes, word order variations, and partial matches.
-> 2. **TF-IDF + Cosine Similarity**: Fast, great for matching key technical words/n-grams.
-> 3. **Semantic Embeddings (SentenceTransformers)**: Best for pure semantic similarity (e.g. matching *"facing issue"* with *"error"* even with zero word overlap), but requires downloading a small model (~100MB) on the backend server.
-> We plan to implement the **Fuzzy + TF-IDF** combination as the standard baseline, with an optional toggle/fallback for **SentenceTransformers** if local system resources allow.
+This implementation plan has been updated to reflect the current state of the codebase, including a **code audit and critical bugs identified in the existing backend code**, and to provide a complete, concrete roadmap for the backend endpoints and frontend components.
 
 ---
 
-## Open Questions
+## 🔍 Code Audit & Critical Bugs Identified
 
-> [!NOTE]
-> 1. **Excel Formats**: Do your Excel sheets typically contain multiple sheets/tabs per file, or are they standard single-sheet spreadsheets (`.xlsx` or `.csv`)? We will support `.xlsx`, `.xls`, and `.csv` formats.
-> 2. **Output Layout**: When exporting the final matched Excel sheet, should we append the answers directly to a new column in Sheet 1, or should we output a fully detailed report sheet containing: `[Original Question, Matched Reference Question, Confidence Score, Retrieved Answer]`? (We recommend exporting a detailed report so you can audit the approximation quality).
+During our review of the existing backend files, we identified several runtime and logical errors in `server/matcher.py` and `server/main.py` that must be addressed immediately:
 
----
+### 1. Critical Runtime Errors in `server/matcher.py`
+* **AttributeError in `cleaner` (Line 12)**: 
+  ```python
+  text=text.lower().trim().strip()
+  ```
+  *Python strings do not have a `.trim()` method.* This will throw an `AttributeError` on any non-empty string.
+  * **Fix**: Change to `text = text.lower().strip()`.
+* **NameError in `calculate_tfidf` (Lines 28-31)**:
+  ```python
+  def calculate_tfidf(queries:list[str],references:list[str])->np.ndarray:
+      ...
+      if not query or not reference:
+          return np.zeros((len(query),len(reference)))
+      cleaned_queries = [cleaner(q) for q in query]
+      cleaned_references = [cleaner(r) for r in reference]
+  ```
+  The function arguments are named `queries` and `references`, but the function body references `query` and `reference`, which will throw a `NameError`.
+  * **Fix**: Update all body references to use `queries` and `references`.
+* **NameError in `matching` (Line 85)**:
+  ```python
+  "is_conflict": conflict
+  ```
+  The variable `conflict` is not defined anywhere in the `matching` function, which will cause a `NameError` at runtime.
+  * **Fix**: Define a proper conflict detection threshold (e.g., if the top two matches are within 5% score difference, set `conflict = True`).
+* **Hardcoded Top-K Retrieval (Line 69)**:
+  ```python
+  top_matches = row[:1]
+  ```
+  The `todo.md` and user requirements specify retrieving **Top 3** potential matches to support alternative views and the "Click-to-Swap" feature in the frontend. The current engine only retrieves the single best match and completely ignores any parameter for `top_k`.
+  * **Fix**: Add a `top_k` parameter to the matching runner and retrieve `row[:top_k]` matches.
 
-## Proposed Architecture
+### 2. Syntax Errors & Empty Endpoints in `server/main.py`
+* **Syntax Errors**:
+  The `server/main.py` file contains incomplete decorators and function declarations without bodies or `pass` statements, and it refers to `@app.post` without first defining the `app` instance:
+  ```python
+  import pandas as pd 
+  from fastapi import FastAPI as fa
 
-```mermaid
-graph TD
-    subgraph Frontend [React + Vite UI]
-        Upload[Drag & Drop Upload] --> Config[Column Mapping & Threshold Config]
-        Config --> MatchBtn[Run Matching Engine]
-        MatchBtn --> Progress[Active Matching State]
-        Progress --> Dashboard[Stats & Interactive Results Table]
-        Dashboard --> EditMatch[Manual Match Override Modal]
-        Dashboard --> ExportBtn[Export Merged Excel File]
-    end
-
-    subgraph Backend [FastAPI Service]
-        UploadFiles[File Upload Endpoint] --> Parser[Pandas/OpenPyXL Reader]
-        Parser --> Preview[Column & Row Preview API]
-        MatchAPI[Match Processing Endpoint] --> Preprocessing[Text Normalization Pipeline]
-        Preprocessing --> FuzzyEng[RapidFuzz Token Set Matcher]
-        Preprocessing --> TFIDF[TF-IDF Cosine Matcher]
-        Preprocessing --> Semantic[Optional: MiniLM Sentence Transformer]
-        FuzzyEng & TFIDF & Semantic --> Scorer[Hybrid Weighted Scoring Engine]
-        Scorer --> MatchAPI
-        ExportAPI[Export API] --> Writer[Excel Generation Engine]
-    end
-
-    Frontend -- Uploads Files --> UploadFiles
-    Frontend -- Sends Match Settings --> MatchAPI
-    Frontend -- Requests File Download --> ExportAPI
-```
-
----
-
-## Proposed Changes
-
-We will create a brand new clean codebase under `c:\Users\Chirag Pradhan\qna\`.
-
-### 1. Backend Service (Python FastAPI)
-
-The backend will handle parsing Excel sheets, running the text approximation algorithms, managing high-performance calculations, and serving the results.
-
-#### [NEW] [requirements.txt](file:///c:/Users/Chirag%20Pradhan/qna/backend/requirements.txt)
-Defines all Python dependencies:
-- `fastapi`, `uvicorn`, `multipart`: For creating the high-performance API.
-- `pandas`, `openpyxl`: For loading, parsing, and creating Excel files.
-- `rapidfuzz`: State-of-the-art fast string matching.
-- `scikit-learn`: For TF-IDF keyword vectorization and cosine similarity (utilizing Natural Language Processing (NLP) and information retrieval to convert unstructured text into a format that machine learning algorithms can understand).
-- `sentence-transformers` *(optional)*: For high-quality semantic vector matching.
-
-#### [MODIFY] [matcher.py](file:///c:/Users/Chirag%20Pradhan/qna/server/matcher.py)
-Implements the core approximation matching pipeline:
-- **Clean Text**: Normalize queries and reference questions using a robust `cleaner` (lowercase, strip extra spaces, handle non-string/null cell values gracefully).
-- **TF-IDF + Cosine Similarity**: Leverage `scikit-learn` to calculate a batch similarity matrix for all query-reference pairs, returning a score in `[0.0, 100.0]`.
-- **Fuzzy Token Matching**: Calculate `rapidfuzz` `token_set_ratio` similarity between each query and reference question to handle typos, word orders, and partial phrases.
-- **Hybrid Similarity Scorer**:
-  $$\text{Hybrid Score} = 0.5 \times \text{Fuzzy Score} + 0.5 \times \text{TF-IDF Score}$$
-- **Top-K Retrieval**: Sort candidate matches by hybrid score in descending order, filtering out any matches below the user-defined `threshold`, and capping the results list at `top_k` (default 3).
-- **Conflict / Multi-Solution Detection**: If the top two retrieved matches both score above the threshold and their confidence scores differ by less than `5.0` points, mark the query row with `is_conflict = True` to highlight it for manual verification in the UI.
-- **Structure for Click-to-Swap**: Return `selected_match_idx = 0` (pointing to the highest-scoring candidate) by default, along with all original columns in a metadata object `original_row` so that the React UI can seamlessly support custom promotion/swapping.
-
-#### [NEW] [main.py](file:///c:/Users/Chirag%20Pradhan/qna/backend/main.py)
-Configures the FastAPI application, CORS middleware, and API endpoints:
-- **Local Data Integration**: Automatically checks for pre-placed Excel sheets inside the `server/data/` directory (e.g., `questions.xlsx` and `answers.xlsx`) and offers them as the default database.
-- `POST /api/upload`: Receives two files, saves them temporarily, parses headers and first 5 preview rows.
-- `POST /api/match`: Takes column selections, threshold, multi-solution limits, and algorithm parameters, runs `matcher.py`, and returns matched rows with their Top-K potential solutions and confidence scores. Supports matching uploaded files OR the pre-placed files inside `server/data/`.
-- `POST /api/export`: Generates and streams the merged Excel file in the chosen multi-solution format (Best Match, Multi-Column, or Concatenated) with confidence coloring and highlight styles.
+  @app.post('/api/upload')
+  async def upload_file():
+      
+  # (No app instance defined, no body, no return statements)
+  ```
+  * **Fix**: Initialize `app = fa()`, add proper Pydantic schemas, and implement file reading and matching logic using `Pandas` and `openpyxl`.
 
 ---
 
-### 2. Frontend Application (React in `client/react-frontend`)
+## 🛠️ Proposed Backend Changes
 
-The UI will be designed with **premium dark/light-mode-capable glassmorphism aesthetics**, employing custom CSS, subtle transitions, and fully custom interactive widgets instead of basic component libraries.
+We will fix the errors in `server/matcher.py` and fully implement `server/main.py` to create a robust REST API.
 
-#### [MODIFY] [package.json](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/package.json)
-Configures standard React dependencies, development proxy to `http://localhost:8000`, and essential utilities like `lucide-react` for beautiful icons.
+### [MODIFY] [matcher.py](file:///c:/Users/Chirag%20Pradhan/qna/server/matcher.py)
+* **Correct all syntax and name errors** (`trim()`, `query` vs `queries`, `reference` vs `references`).
+* **Update `matching` function signature**:
+  ```python
+  def matching(sheet1: pd.DataFrame, sheet2: pd.DataFrame, cname1: str, cname2: str, ans_cname: str, threshold: float, top_k: int = 3) -> list:
+  ```
+* **Implement robust Conflict Detection**:
+  For each question, sort the generated hybrid matches. If `len(row) >= 2`, check the absolute difference between `row[0]["score"]` and `row[1]["score"]`. If `row[0]["score"] >= threshold` and `row[1]["score"] >= threshold` and the difference is `< 5.0` points, set `is_conflict = True` to flag it for the user in the UI.
 
-#### [MODIFY] [App.css](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/App.css)
-Creates the complete, custom, visual experience:
-- Modern CSS variables for dynamic color systems (neon-accents, slate backgrounds, glass panels).
-- Smooth grid layouts, custom-styled scrollbars, and keyframe loading animations.
-- Glassmorphic panels with `backdrop-filter: blur(12px)`.
-- Responsive design for full-width high-resolution monitors.
-
-#### [MODIFY] [App.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/App.js)
-Manages the global application state:
-- Uploaded file metadata and previews.
-- App configurations (similarity threshold, selected columns, matching mode).
-- API loading states and matching progress.
-- Clean view switching between **Upload State**, **Matching State**, and **Results Dashboard**.
-
-#### [NEW] [FileUpload.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/components/FileUpload.js)
-A premium drag-and-drop file upload zone.
-- Visual file feedback (shows file name, type, and size).
-- Error handling for invalid files (e.g., non-Excel uploads, corrupted structures).
-- Live previews of parsed headers and sheet contents.
-
-#### [NEW] [MatchConfig.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/components/MatchConfig.js)
-The configuration dashboard allowing full user control:
-- Dropdown selectors to map Question columns and Answer columns dynamically.
-- An interactive similarity threshold slider with live percentage status (e.g., *"Filter out matches below 65%"*).
-- **Multi-Solution Selector**: Control how many alternative answers to retrieve (e.g., 1 to 5) and choose the Excel Export Mode (Best Match, Multi-Column, or Concatenated).
-- Advanced algorithm toggles.
-
-#### [NEW] [ResultTable.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/components/ResultTable.js)
-The central operational screen:
-- A search and filter bar to isolate results (e.g. *"Show only Low Confidence Matches"*, *"Show Conflicts"* or search query).
-- A beautifully styled table showing the active selected matches and:
-  - **Expandable Rows**: Clicking on a question expands a slide-out drawer containing a list of **all retrieved solutions (Top K)**.
-  - **Solution Card Grid**: Inside the drawer, each alternative answer is displayed as a sleek glassmorphic card showing the matched reference question, answer text, and confidence percentage.
-  - **Click-to-Swap Override**: Users can easily click on any alternative solution card to promote it to the primary answer.
-  - **Conflict / Multi-Solution Badge**: A specialized badge highlighting when a question has multiple high-confidence solutions, prompting the user for manual validation.
-
-#### [NEW] [DashboardStats.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/components/DashboardStats.js)
-A quick-glance analytics grid highlighting:
-- Total matching percentage (e.g., 94% overall success rate).
-- Total questions processed vs. successfully answered.
-- **Multiple Solution Conflicts**: Counts the number of questions where multiple strong matches were detected, helping users jump straight to high-priority reviews.
-- Total low confidence alerts needing manual review.
+### [MODIFY] [main.py](file:///c:/Users/Chirag%20Pradhan/qna/server/main.py)
+* **Setup API Server**:
+  Initialize FastAPI, enable CORS middleware to allow connections from `http://localhost:3000`, and set up a temporary directory to cache uploaded files during the session.
+* **`POST /api/upload`**:
+  Accepts two uploaded Excel/CSV files (`file1` and `file2`). Parses them using `pandas.read_excel()` or `pandas.read_csv()`, retrieves their columns, extracts the first 5 preview rows, and returns this metadata to the frontend so the user can map the columns.
+* **`POST /api/match`**:
+  Accepts a JSON payload detailing the column selections, similarity threshold, `top_k`, and temporary file paths. Runs the corrected `matching` engine and returns the matching payload containing all matched rows, Top-K candidates, conflict statuses, and confidence scores.
+* **`POST /api/export`**:
+  Accepts the current matched results list (including any manual overrides made by the user) and the chosen export mode (`best`, `multi_column`, or `concat`). Generates a downloadable Excel sheet using `pandas` and `openpyxl` with:
+  * Highlighted header rows.
+  * Formatted columns showing the results.
+  * Color-coded confidence scores (e.g., green for high confidence, orange for low confidence, red for conflicts/unmatched).
 
 ---
 
-## Verification Plan
+## 🎨 Proposed Frontend Changes (`client/react-frontend`)
 
-### Creating Test Data (Local Excel Sheets)
-To test the approximate matching pipeline locally with valid Excel formats, run this Python script in your `server/` directory:
-```powershell
-python -c "import pandas as pd; pd.DataFrame({'Question': ['i am facing issue in login', 'how to reset password', 'payment failed']}).to_excel('data/questions.xlsx', index=False); pd.DataFrame({'Question': ['login error occurred', 'password reset procedure', 'payment issue'], 'Answer': ['Please clear your browser cookies and cache.', 'Go to settings and click Reset Password.', 'Verify your card details and try again.']}).to_excel('data/answers.xlsx', index=False); print('Success: Created valid questions.xlsx and answers.xlsx!')"
-```
+Since the React component files are currently empty, we will implement a fully custom, premium glassmorphic interface with custom styling and smooth animations.
 
-### Automated/Unit Testing
-- **Backend Algorithms**: Run internal unit tests on `matcher.py` with edge cases (e.g. empty strings, exact matches, complex phrases like *"how do I reset"* vs *"password reset procedure"*).
-- **Endpoint validation**: Run API tests checking handling of malformed Excel sheets and missing columns.
+### [MODIFY] [App.css](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/App.css)
+Configure modern CSS styling using a curated palette:
+* **Slate & Indigo Glassmorphic theme**: Dark-mode base (`#0f172a`), translucent glass panels with `backdrop-filter: blur(12px)` and thin borders (`rgba(255, 255, 255, 0.08)`).
+* **Color codes**: High confidence (`#10b981` emerald), Low confidence (`#f59e0b` amber), Conflict/High Alert (`#ef4444` rose), and Indigo theme accents (`#6366f1`).
+* **Animations**: Fade-in-up animations for cards and smooth transition states for expander elements.
 
-### Manual Verification Flow
-1. **Upload Phase**:
-   - Verify drag-and-drop handles `.xlsx` and `.csv` files correctly.
-   - Confirm file preview generates instantly on the UI.
-2. **Matching Quality Phase**:
-   - Provide exact duplicate questions -> verify matching is $100\%$.
-   - Provide approximate matches (e.g. *"facing issues in logging in"* vs *"login error occurred"*) -> verify it yields high confidence score matches (>75%) and retrieves the correct answers.
-   - Adjust the similarity slider in real time to filter matches.
-3. **Override Flow**:
-   - Trigger the override modal on a match, pick a different reference question, and verify the UI updates the matched answer instantly.
-4. **Export Phase**:
-   - Click "Export" and open the generated Excel file. Ensure all matched questions, answers, and confidence ratings are present, properly aligned, and formatted cleanly.
+### [MODIFY] [App.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/App.js)
+Manages the application workflow across three key views:
+1. **Upload View**: Prompt user to drag & drop Sheet 1 (Questions) and Sheet 2 (Reference Answers).
+2. **Config View**: Show parsed headers, let users select columns, adjust the threshold slider (0-100%), set `top_k`, select the Excel export format, and run the matching engine.
+3. **Dashboard/Results View**: Render matching statistics (KPIs) and the central interactable matching spreadsheet table.
+
+### [MODIFY] [FileUpload.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/FileUpload.js)
+* Visual drag-and-drop zone using standard HTML drag events.
+* Shows active file stats (name, size, row count preview).
+* Validates file extensions (`.xlsx`, `.xls`, `.csv`).
+
+### [MODIFY] [MatchConfig.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/MatchConfig.js)
+* Renders dropdowns for:
+  * Sheet 1 Question Column.
+  * Sheet 2 Reference Question Column.
+  * Sheet 2 Reference Answer Column.
+* Threshold slider showing real-time feedback (e.g. *"Only accept matches with >70% confidence"*).
+* Top-K selector (retrieving 1 to 5 potential answers).
+* Export mode selector:
+  * **Best Match Only**: Saves only the single highest-scoring answer.
+  * **Multi-Column Export**: Appends multiple solution columns (`Answer 1`, `Answer 2`, etc.).
+  * **Merged Concatenation**: Merges multiple answers into one cell with bullet points and scores.
+
+### [MODIFY] [ResultTable.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/ResultTable.js)
+* **Search & Filters**: Search queries, filter by "High Confidence" (>80%), "Low Confidence" (threshold to 80%), and "Conflicts" (is_conflict is true).
+* **Interactive Rows**: Displays original rows side-by-side with the primary matched answer and a confidence badge.
+* **Expandable Drawer (Click-to-Swap)**:
+  * Clicking on a row expands a beautiful glassmorphic sub-panel showing the list of **Top-K matched options**.
+  * Each option is rendered as a clean clickable card displaying the reference question, the retrieved answer, and the confidence score.
+  * **Manual Override**: Clicking any alternative card instantly swaps it as the active primary match, updating the parent state and final export dataset!
+
+### [MODIFY] [DashboardStats.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/DashboardStats.js)
+* Grid of 4 sleek glassmorphic statistics cards:
+  1. **Success Rate**: Percentage of questions matched above threshold.
+  2. **Total Processed**: Count of original questions.
+  3. **Conflicts Flagged**: Number of rows with overlapping high-confidence matches requiring human audit.
+  4. **Low Confidence**: Count of matches scoring near the threshold limit.
+
+---
+
+## 📈 Verification Plan
+
+### 1. Automated Script (Local Testing)
+We will run a test script (`test_matcher.py`) in `server/` to verify that `matcher.py` runs without errors, computes correct scores, flags conflicts, and respects the `top_k` limits.
+
+### 2. Manual End-to-End Walkthrough
+1. **Launch backend**: Run `uvicorn main:app --reload` on port `8000`.
+2. **Launch frontend**: Run `npm start` on port `3000`.
+3. **Workflow test**:
+   * Upload `questions.xlsx` and `answers.xlsx` from `server/data/`.
+   * Map the `Question` column for Sheet 1 and `Question` + `Answer` for Sheet 2.
+   * Run the matcher.
+   * Expand a row to verify that alternative Top-K solutions display.
+   * Perform a Click-to-Swap override and confirm the table updates immediately.
+   * Export in "Multi-Column" and "Merged Concatenation" modes and verify the downloaded Excel formatting.
