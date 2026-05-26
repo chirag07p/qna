@@ -98,10 +98,12 @@ FastAPI listens for requests sent by the browser (frontend), runs the matcher, a
 
 ## 🎨 PHASE 2: Frontend Setup & Development (React)
 
-Your React frontend has already been created using `create-react-app` in `client/react-frontend/`. Now let's set it up to talk to the backend.
+Your React frontend has already been created in `client/react-frontend/`. Now let's set it up to talk to the backend.
+
+---
 
 ### Step 1: Install Frontend Packages
-We need a library to send API requests (`axios`) and some modern icons (`lucide-react`).
+We need standard packages like `axios` and `lucide-react`.
 - [ ] **Open a new terminal window** (keep the backend one running!).
 - [ ] **Change directory into the React project:**
   ```powershell
@@ -125,7 +127,7 @@ To avoid running into networking cross-origin blockages (CORS), we tell React to
 
 ### Step 3: Build the UI Components
 We want a beautiful UI, so we will build it in modern components.
-- [ ] **Clean default files:** Open `src/App.js` and delete the default header content. Open `src/App.css` and delete default styles.
+- [ ] **Clean default files:** Open `src/App.js` and delete the default header content. Open `src/App.css` and delete default styles. Also clean `src/index.js` to remove the missing reportWebVitals.
 - [ ] **Create Component files:** Inside `client/react-frontend/src/`, create a folder named `components`.
 - [ ] **Build `FileUpload.js`:** A drag-and-drop box for users to select Sheet 1 (questions) and Sheet 2 (answers).
 - [ ] **Build `MatchConfig.js`:** Shows dropdown menus for choosing column names dynamically, along with a similarity percentage slider, a Top-K selector, and an Excel export format dropdown.
@@ -158,5 +160,5 @@ Tie the components together using state variables.
   ```powershell
   npm start
   ```
-- [ ] **Verify locally:** Your browser will open `http://localhost:3000`. 
+- [ ] **Verify locally:** Your browser will open `http://localhost:3000`.
 - [ ] Upload two sample Excel sheets, select columns, click match, inspect results, adjust threshold, and download the finished sheet!

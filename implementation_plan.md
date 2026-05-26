@@ -110,47 +110,41 @@ Configures the FastAPI application, CORS middleware, and API endpoints:
 
 ---
 
-### 2. Frontend Application (React + Vite)
+### 2. Frontend Application (React in `client/react-frontend`)
 
 The UI will be designed with **premium dark/light-mode-capable glassmorphism aesthetics**, employing custom CSS, subtle transitions, and fully custom interactive widgets instead of basic component libraries.
 
-#### [NEW] [package.json](file:///c:/Users/Chirag%20Pradhan/qna/frontend/package.json)
-Configures standard React, Vite, and essential utilities like `lucide-react` for beautiful icons.
+#### [MODIFY] [package.json](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/package.json)
+Configures standard React dependencies, development proxy to `http://localhost:8000`, and essential utilities like `lucide-react` for beautiful icons.
 
-#### [NEW] [vite.config.js](file:///c:/Users/Chirag%20Pradhan/qna/frontend/vite.config.js)
-Sets up the build tool and configures a proxy to pass backend requests seamlessly to `http://localhost:8000/api`.
-
-#### [NEW] [index.html](file:///c:/Users/Chirag%20Pradhan/qna/frontend/index.html)
-Sets up the HTML base, referencing beautiful fonts from Google Fonts (e.g., *Inter* or *Outfit*).
-
-#### [NEW] [App.css](file:///c:/Users/Chirag%20Pradhan/qna/frontend/src/App.css)
+#### [MODIFY] [App.css](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/App.css)
 Creates the complete, custom, visual experience:
 - Modern CSS variables for dynamic color systems (neon-accents, slate backgrounds, glass panels).
 - Smooth grid layouts, custom-styled scrollbars, and keyframe loading animations.
 - Glassmorphic panels with `backdrop-filter: blur(12px)`.
 - Responsive design for full-width high-resolution monitors.
 
-#### [NEW] [App.jsx](file:///c:/Users/Chirag%20Pradhan/qna/frontend/src/App.jsx)
+#### [MODIFY] [App.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/App.js)
 Manages the global application state:
 - Uploaded file metadata and previews.
 - App configurations (similarity threshold, selected columns, matching mode).
 - API loading states and matching progress.
 - Clean view switching between **Upload State**, **Matching State**, and **Results Dashboard**.
 
-#### [NEW] [FileUpload.jsx](file:///c:/Users/Chirag%20Pradhan/qna/frontend/src/components/FileUpload.jsx)
+#### [NEW] [FileUpload.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/components/FileUpload.js)
 A premium drag-and-drop file upload zone.
 - Visual file feedback (shows file name, type, and size).
 - Error handling for invalid files (e.g., non-Excel uploads, corrupted structures).
 - Live previews of parsed headers and sheet contents.
 
-#### [NEW] [MatchConfig.jsx](file:///c:/Users/Chirag%20Pradhan/qna/frontend/src/components/MatchConfig.jsx)
+#### [NEW] [MatchConfig.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/components/MatchConfig.js)
 The configuration dashboard allowing full user control:
 - Dropdown selectors to map Question columns and Answer columns dynamically.
 - An interactive similarity threshold slider with live percentage status (e.g., *"Filter out matches below 65%"*).
 - **Multi-Solution Selector**: Control how many alternative answers to retrieve (e.g., 1 to 5) and choose the Excel Export Mode (Best Match, Multi-Column, or Concatenated).
 - Advanced algorithm toggles.
 
-#### [NEW] [ResultsTable.jsx](file:///c:/Users/Chirag%20Pradhan/qna/frontend/src/components/ResultsTable.jsx)
+#### [NEW] [ResultTable.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/components/ResultTable.js)
 The central operational screen:
 - A search and filter bar to isolate results (e.g. *"Show only Low Confidence Matches"*, *"Show Conflicts"* or search query).
 - A beautifully styled table showing the active selected matches and:
@@ -159,7 +153,7 @@ The central operational screen:
   - **Click-to-Swap Override**: Users can easily click on any alternative solution card to promote it to the primary answer.
   - **Conflict / Multi-Solution Badge**: A specialized badge highlighting when a question has multiple high-confidence solutions, prompting the user for manual validation.
 
-#### [NEW] [DashboardStats.jsx](file:///c:/Users/Chirag%20Pradhan/qna/frontend/src/components/DashboardStats.jsx)
+#### [NEW] [DashboardStats.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/components/DashboardStats.js)
 A quick-glance analytics grid highlighting:
 - Total matching percentage (e.g., 94% overall success rate).
 - Total questions processed vs. successfully answered.
