@@ -88,12 +88,13 @@ Defines all Python dependencies:
 - `fastapi`, `uvicorn`, `multipart`: For creating the high-performance API.
 - `pandas`, `openpyxl`: For loading, parsing, and creating Excel files.
 - `rapidfuzz`: State-of-the-art fast string matching.
-- `scikit-learn`: For TF-IDF keyword vectorization and cosine similarity.
+- `scikit-learn`: For TF-IDF keyword vectorization and cosine similarity (utilizing Natural Language Processing (NLP) and information retrieval to convert unstructured text into a format that machine learning algorithms can understand).
 - `sentence-transformers` *(optional)*: For high-quality semantic vector matching.
 
 #### [NEW] [matcher.py](file:///c:/Users/Chirag%20Pradhan/qna/backend/matcher.py)
 Implements the core approximation matching pipeline supporting multiple solutions:
 - Text cleaning (lowercase, strip, special character normalization).
+- TF-IDF vectorization utilizing Natural Language Processing (NLP) and information retrieval to convert unstructured text into a format that machine learning algorithms can understand.
 - Hybrid scoring function:
   $$\text{Score} = w_1 \cdot \text{FuzzyTokenSetRatio} + w_2 \cdot \text{TFIDF-CosineSimilarity}$$
 - **Top-K Candidates Retrieval**: Finds and ranks the Top K (e.g. top 3 or 5) match candidates above the user-specified threshold.

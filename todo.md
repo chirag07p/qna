@@ -66,12 +66,12 @@ We need libraries for reading Excel files, running the web server, and doing the
 
 ### Step 3: Write the Matching Engine (`matcher.py`)
 This script contains the brain of our app—it compares questions and outputs the best answers.
-- [ ] **Create `matcher.py`:** Inside `server/`, create a file called `matcher.py`.
-- [ ] **Write the logic:**
-  1. Clean the text (lowercase it, remove extra spaces).
-  2. Write a function `calculate_fuzzy_score(q1, q2)` using `rapidfuzz` (e.g. `token_set_ratio`).
-  3. Write a function `calculate_tfidf_score(questions_list, queries_list)` using `scikit-learn`'s TF-IDF vectorizer.
-  4. Write a runner function `match_sheets(sheet1_df, sheet2_df, col1_name, col2_name, ans_col_name, threshold, top_k=3)` to pair rows, return the Top K matches for each query, and identify conflicts where multiple strong solutions exist.
+- [x] **Create `matcher.py`:** Inside `server/`, create a file called `matcher.py`.
+- [x] **Write the logic:**
+  1. [x] Clean the text (lowercase it, remove extra spaces).
+  2. [x] Write a function `calculate_fuzzy_score(q1, q2)` using `rapidfuzz` (e.g. `token_set_ratio`).
+  3. [x] Write a function `calculate_tfidf_score(questions_list, queries_list)` using `scikit-learn`'s TF-IDF vectorizer, utilizing Natural Language Processing (NLP) and information retrieval to convert unstructured text into a format that machine learning algorithms can understand.
+  4. [ ] Write a runner function `match_sheets(sheet1_df, sheet2_df, col1_name, col2_name, ans_col_name, threshold, top_k=3)` to pair rows, return the Top K matches for each query, and identify conflicts where multiple strong solutions exist.
 
 ---
 
