@@ -85,28 +85,31 @@ We will fix the errors in `server/matcher.py` and fully implement `server/main.p
 
 ---
 
-## 🎨 Proposed Frontend Changes (`client/react-frontend`)
+## 🎨 Proposed Frontend Changes (`client`)
 
-Since the React component files are currently empty, we will implement a fully custom, premium glassmorphic interface with custom styling and smooth animations.
+We will build the custom React components under `client/src/` with a premium glassmorphic dark-mode palette:
 
-### [MODIFY] [App.css](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/App.css)
+### [MODIFY] [package.json](file:///c:/Users/Chirag%20Pradhan/qna/client/package.json)
+Configures standard React dependencies, development proxy to `http://localhost:8000`, and essential utilities like `lucide-react` for beautiful icons.
+
+### [MODIFY] [App.css](file:///c:/Users/Chirag%20Pradhan/qna/client/src/App.css)
 Configure modern CSS styling using a curated palette:
 * **Slate & Indigo Glassmorphic theme**: Dark-mode base (`#0f172a`), translucent glass panels with `backdrop-filter: blur(12px)` and thin borders (`rgba(255, 255, 255, 0.08)`).
 * **Color codes**: High confidence (`#10b981` emerald), Low confidence (`#f59e0b` amber), Conflict/High Alert (`#ef4444` rose), and Indigo theme accents (`#6366f1`).
 * **Animations**: Fade-in-up animations for cards and smooth transition states for expander elements.
 
-### [MODIFY] [App.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/App.js)
+### [MODIFY] [App.js](file:///c:/Users/Chirag%20Pradhan/qna/client/src/App.js)
 Manages the application workflow across three key views:
 1. **Upload View**: Prompt user to drag & drop Sheet 1 (Questions) and Sheet 2 (Reference Answers).
 2. **Config View**: Show parsed headers, let users select columns, adjust the threshold slider (0-100%), set `top_k`, select the Excel export format, and run the matching engine.
 3. **Dashboard/Results View**: Render matching statistics (KPIs) and the central interactable matching spreadsheet table.
 
-### [MODIFY] [FileUpload.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/FileUpload.js)
+### [MODIFY] [FileUpload.js](file:///c:/Users/Chirag%20Pradhan/qna/client/src/FileUpload.js)
 * Visual drag-and-drop zone using standard HTML drag events.
 * Shows active file stats (name, size, row count preview).
 * Validates file extensions (`.xlsx`, `.xls`, `.csv`).
 
-### [MODIFY] [MatchConfig.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/MatchConfig.js)
+### [MODIFY] [MatchConfig.js](file:///c:/Users/Chirag%20Pradhan/qna/client/src/MatchConfig.js)
 * Renders dropdowns for:
   * Sheet 1 Question Column.
   * Sheet 2 Reference Question Column.
@@ -118,7 +121,7 @@ Manages the application workflow across three key views:
   * **Multi-Column Export**: Appends multiple solution columns (`Answer 1`, `Answer 2`, etc.).
   * **Merged Concatenation**: Merges multiple answers into one cell with bullet points and scores.
 
-### [MODIFY] [ResultTable.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/ResultTable.js)
+### [MODIFY] [ResultTable.js](file:///c:/Users/Chirag%20Pradhan/qna/client/src/ResultTable.js)
 * **Search & Filters**: Search queries, filter by "High Confidence" (>80%), "Low Confidence" (threshold to 80%), and "Conflicts" (is_conflict is true).
 * **Interactive Rows**: Displays original rows side-by-side with the primary matched answer and a confidence badge.
 * **Expandable Drawer (Click-to-Swap)**:
@@ -126,7 +129,7 @@ Manages the application workflow across three key views:
   * Each option is rendered as a clean clickable card displaying the reference question, the retrieved answer, and the confidence score.
   * **Manual Override**: Clicking any alternative card instantly swaps it as the active primary match, updating the parent state and final export dataset!
 
-### [MODIFY] [DashboardStats.js](file:///c:/Users/Chirag%20Pradhan/qna/client/react-frontend/src/DashboardStats.js)
+### [MODIFY] [DashboardStats.js](file:///c:/Users/Chirag%20Pradhan/qna/client/src/DashboardStats.js)
 * Grid of 4 sleek glassmorphic statistics cards:
   1. **Success Rate**: Percentage of questions matched above threshold.
   2. **Total Processed**: Count of original questions.
