@@ -35,6 +35,59 @@ qna/
 
 ---
 
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    %% Styling definitions
+    classDef clientStyle fill:#eef2ff,stroke:#6366f1,stroke-width:2px,color:#1e1b4b;
+    classDef serverStyle fill:#f0fdf4,stroke:#22c55e,stroke-width:2px,color:#14532d;
+    classDef dataStyle fill:#fffbeb,stroke:#f59e0b,stroke-width:2px,color:#78350f;
+
+    %% Nodes
+    subgraph Client ["🎨 React Frontend (Client)"]
+        UI["App.js / App.css<br>(Glassmorphic UI)"]:::clientStyle
+    end
+
+    subgraph Server ["🖥️ FastAPI Backend (Server)"]
+        API["main.py<br>(Uvicorn Server / CORS)"]:::serverStyle
+        Matcher["matcher.py<br>(Hybrid Search Engine)"]:::serverStyle
+        TFIDF["TF-IDF Vectorizer<br>(60% Score Weight)"]:::serverStyle
+        Fuzzy["RapidFuzz Levenshtein<br>(40% Score Weight)"]:::serverStyle
+        KeywordBoost["Domain Keyword Boosting<br>(Regex Overlap Check)"]:::serverStyle
+    end
+
+    subgraph Data ["📂 Data Store"]
+        Excel["answers.xlsx<br>(Preloaded Q&A Database)"]:::dataStyle
+    end
+
+    %% Flows & Interactions
+    UI -->|1. GET /api/stats| API
+    UI -->|2. POST /api/query| API
+    
+    API -->|Load on Startup| Excel
+    
+    API -->|Invoke Matcher| Matcher
+    Matcher -->|Vector Similarity| TFIDF
+    Matcher -->|String Metric| Fuzzy
+    
+    TFIDF --> Matcher
+    Fuzzy --> Matcher
+    
+    Matcher -->|Apply Topic Rules| KeywordBoost
+    KeywordBoost -->|Boost +35 / Penalty -25| Matcher
+    
+    Matcher -->|Return Ranked Results| API
+    API -->|JSON Matches Response| UI
+
+    %% Custom Class assignments
+    class UI clientStyle;
+    class API,Matcher,TFIDF,Fuzzy,KeywordBoost serverStyle;
+    class Excel dataStyle;
+```
+
+---
+
 ## 🖥️ Backend (Server) Deep Dive
 
 The backend is built with **FastAPI** to serve search results in real time from the preloaded spreadsheet database.
