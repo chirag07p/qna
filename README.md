@@ -58,14 +58,17 @@ graph TD
     end
 
     subgraph Data ["📂 Data Store"]
-        Excel["answers.xlsx<br>(Preloaded Q&A Database)"]:::dataStyle
+        ExcelAnswers["answers.xlsx<br>(Preloaded Q&A Database)"]:::dataStyle
+        ExcelQuestions["questions.xlsx<br>(Source Questions Dataset)"]:::dataStyle
     end
 
     %% Flows & Interactions
     UI -->|1. GET /api/stats| API
     UI -->|2. POST /api/query| API
     
-    API -->|Load on Startup| Excel
+    API -->|Load Q&A Knowledge Base| ExcelAnswers
+    
+    ExcelQuestions -.->|Batch Query Source / Reference| Matcher
     
     API -->|Invoke Matcher| Matcher
     Matcher -->|Vector Similarity| TFIDF
@@ -83,7 +86,7 @@ graph TD
     %% Custom Class assignments
     class UI clientStyle;
     class API,Matcher,TFIDF,Fuzzy,KeywordBoost serverStyle;
-    class Excel dataStyle;
+    class ExcelAnswers,ExcelQuestions dataStyle;
 ```
 
 ---
