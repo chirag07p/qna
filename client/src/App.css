@@ -1,4 +1,4 @@
-/* Search Engine Style System (Google/Bing inspired minimalist layout) */
+/* Single-Page Centered Search Engine Styling System */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
@@ -6,10 +6,9 @@
   --text-primary: #1a1f2c;
   --text-secondary: #5f6368;
   --link-color: #1a0dab;
-  --link-visited: #609;
-  --border-color: #dadce0;
+  --border-color: #e2e8f0;
   --cyan-accent: #0ea5e9;
-  --card-shadow: 0 1px 6px rgba(32,33,36,0.28);
+  --card-shadow: 0 1px 6px rgba(32,33,36,0.2);
 }
 
 body {
@@ -26,87 +25,92 @@ body {
   position: relative;
   min-height: 100vh;
   width: 100%;
-  box-sizing: border-box;
 }
 
 .background-glows, .grid-overlay {
   display: none;
 }
 
-/* ==========================================================================
-   Home Layout (Centered search engine home page)
-   ========================================================================== */
-.home-layout .app-container {
-  max-width: 800px;
+.app-container {
+  max-width: 700px;
   margin: 0 auto;
-  min-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem 1.5rem;
+  padding: 4rem 1.5rem;
   box-sizing: border-box;
-}
-
-.home-layout .search-header {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: 100%;
-  gap: 1.75rem;
-  margin-bottom: 1.5rem;
 }
 
-.home-layout .logo-container {
+/* Header styling */
+.search-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.logo-container {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
   cursor: pointer;
 }
 
-.home-layout .brand-dot {
-  width: 12px;
-  height: 12px;
+.brand-dot {
+  width: 10px;
+  height: 10px;
   background-color: var(--cyan-accent);
   border-radius: 50%;
   box-shadow: 0 0 10px var(--cyan-accent);
   animation: pulse 2s infinite;
 }
 
-.home-layout .logo-text {
-  font-size: 3.5rem;
+.logo-text {
+  font-size: 3.25rem;
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.04em;
+  line-height: 1;
 }
 
-.home-layout .search-form {
+.search-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0;
+}
+
+/* Search input styling */
+.search-form {
   width: 100%;
-  max-width: 600px;
-  margin: 0;
+  margin: 0 0 1.5rem 0;
+  position: relative;
 }
 
-.home-layout .search-input {
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
   width: 100%;
   background: #ffffff;
   border: 1px solid #dfe1e5;
   border-radius: 28px;
   color: var(--text-primary);
   font-size: 1.15rem;
-  padding: 1.15rem 4rem 1.15rem 1.5rem;
+  padding: 1.1rem 4rem 1.1rem 1.5rem;
   outline: none;
   box-sizing: border-box;
-  transition: box-shadow 0.2s;
-  box-shadow: none;
+  transition: box-shadow 0.2s, border-color 0.2s;
 }
 
-.home-layout .search-input:focus,
-.home-layout .search-input:hover {
+.search-input:focus,
+.search-input:hover {
   border-color: transparent;
-  box-shadow: var(--card-shadow);
+  box-shadow: 0 1px 6px rgba(32,33,36,0.28);
 }
 
-.home-layout .search-icon-btn {
+.search-icon-btn {
   position: absolute;
   right: 1.5rem;
   background: none;
@@ -115,40 +119,30 @@ body {
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
-.home-content {
-  width: 100%;
-  text-align: center;
-}
-
-.home-subtitle {
-  color: var(--text-secondary);
-  font-size: 1.05rem;
-  margin-bottom: 2rem;
-  margin-top: 0;
-}
-
-/* Suggestions under search bar */
-.home-layout .suggestions-container {
+/* Suggestions styling */
+.suggestions-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.5rem;
+  margin-bottom: 2rem;
   transition: opacity 0.3s, transform 0.3s;
 }
 
-.home-layout .suggestions-container.fade-in {
+.suggestions-container.fade-in {
   opacity: 1;
   transform: translateY(0);
 }
 
-.home-layout .suggestions-container.fade-out {
+.suggestions-container.fade-out {
   opacity: 0;
   transform: translateY(-4px);
 }
 
-.home-layout .suggestion-pill {
+.suggestion-pill {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   color: var(--text-secondary);
@@ -160,156 +154,81 @@ body {
   transition: all 0.2s;
 }
 
-.home-layout .suggestion-pill:hover {
+.suggestion-pill:hover {
   background: #f1f5f9;
   border-color: #cbd5e1;
   color: var(--text-primary);
   transform: translateY(-1px);
 }
 
-/* ==========================================================================
-   Results Layout (Compact top search bar, results offset like Google)
-   ========================================================================== */
-.results-layout .app-container {
+/* Results container styling */
+.results-container {
   width: 100%;
-  padding: 0;
+  margin-top: 1rem;
+  animation: fadeInUp 0.4s ease-out;
 }
 
-.results-layout .search-header {
+.results-info-bar {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 2rem;
-  padding: 1.5rem 2.5rem;
-  border-bottom: 1px solid #e8eaed;
-  background: #ffffff;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.header-back-button {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: background-color 0.2s, color 0.2s;
-}
-
-.header-back-button:hover {
-  background-color: #f1f5f9;
-  color: var(--text-primary);
-}
-
-.results-layout .logo-container {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.results-layout .brand-dot {
-  width: 8px;
-  height: 8px;
-  background-color: var(--cyan-accent);
-  border-radius: 50%;
-}
-
-.results-layout .logo-text {
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  letter-spacing: -0.03em;
-}
-
-.results-layout .search-form {
-  flex-grow: 1;
-  max-width: 630px;
-  margin: 0;
-  position: relative;
-}
-
-.results-layout .search-input {
-  width: 100%;
-  background: #ffffff;
-  border: 1px solid #dfe1e5;
-  border-radius: 24px;
-  color: var(--text-primary);
-  font-size: 1rem;
-  padding: 0.75rem 3.5rem 0.75rem 1.25rem;
-  outline: none;
-  box-sizing: border-box;
-  transition: box-shadow 0.2s;
-}
-
-.results-layout .search-input:focus,
-.results-layout .search-input:hover {
-  border-color: transparent;
-  box-shadow: 0 1px 6px rgba(32,33,36,0.2);
-}
-
-.results-layout .search-icon-btn {
-  position: absolute;
-  right: 1.25rem;
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-}
-
-/* Results Content alignment (aligned with search box on larger screens) */
-.results-layout-body {
-  padding: 1.5rem 2.5rem;
-  max-width: 1200px;
-}
-
-@media (min-width: 768px) {
-  .results-layout-body {
-    padding-left: 175px; /* Aligns results exactly below the search input capsule, matching Google Search */
-  }
-}
-
-.results-info {
   font-size: 0.875rem;
   color: var(--text-secondary);
   margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.75rem;
+}
+
+.clear-search-btn {
+  background: none;
+  border: none;
+  color: #0284c7;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.clear-search-btn:hover {
+  text-decoration: underline;
 }
 
 .results-list {
   display: flex;
   flex-direction: column;
-  gap: 2.25rem;
+  gap: 1.25rem;
 }
 
-/* Search engine snippet view */
-.search-result-item {
+/* Solution search result card */
+.search-result-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(15,23,42,0.01);
+  transition: border-color 0.25s, box-shadow 0.25s;
   display: flex;
   flex-direction: column;
-  max-width: 650px;
-  animation: fadeInUp 0.4s ease-out;
+  gap: 0.75rem;
+}
+
+.search-result-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 16px rgba(15,23,42,0.04);
 }
 
 .result-breadcrumb {
   font-size: 0.75rem;
   color: var(--text-secondary);
-  margin-bottom: 0.25rem;
-  letter-spacing: 0.01em;
+  display: block;
 }
 
 .matched-question {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   color: var(--link-color);
-  font-weight: 500;
-  margin: 0 0 0.4rem 0;
+  font-weight: 600;
+  margin: 0;
   cursor: pointer;
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 .matched-question:hover {
@@ -324,8 +243,8 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.03em;
   display: inline-block;
-  margin-bottom: 0.5rem;
   border: 1px solid transparent;
+  width: fit-content;
 }
 
 .confidence-high {
@@ -347,41 +266,44 @@ body {
 }
 
 .result-answer {
-  margin-bottom: 0.5rem;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(15,23,42,0.01);
 }
 
 .answer-text {
-  color: #3c4043;
+  color: #334155;
   font-size: 0.925rem;
-  line-height: 1.58;
+  line-height: 1.55;
   margin: 0;
   white-space: pre-wrap;
 }
 
-/* Actions */
+/* Copy Action */
 .result-actions {
   display: flex;
-  gap: 0.75rem;
+  justify-content: flex-end;
 }
 
 .copy-btn {
   background: transparent;
-  border: 1px solid #dadce0;
+  border: 1px solid #cbd5e1;
   color: var(--text-secondary);
   padding: 0.35rem 0.75rem;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
+  transition: all 0.2s;
   display: inline-flex;
   align-items: center;
 }
 
 .copy-btn:hover {
-  background-color: #f8fafc;
+  background-color: #f1f5f9;
   color: var(--text-primary);
-  border-color: #c0c4cc;
+  border-color: #94a3b8;
 }
 
 .copy-btn.copied {
@@ -390,17 +312,17 @@ body {
   color: #137333;
 }
 
-/* Loading & Empty state */
+/* Loading & Shimmer */
 .loading-container {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  padding: 2rem 0;
+  align-items: center;
+  padding: 3rem 0;
 }
 
 .loading-spinner {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border: 3px solid rgba(0, 0, 0, 0.05);
   border-top-color: var(--cyan-accent);
   border-radius: 50%;
@@ -416,9 +338,9 @@ body {
 .no-results {
   background: #ffffff;
   border: 1px solid #dfe1e5;
-  border-radius: 8px;
-  padding: 2.5rem;
-  max-width: 650px;
+  border-radius: 12px;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
   color: var(--text-secondary);
 }
 
