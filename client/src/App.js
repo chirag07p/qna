@@ -128,7 +128,7 @@ function App() {
   };
 
   return (
-    <div className="app-layout">
+    <div className={`app-layout ${hasSearched ? 'results-layout' : 'home-layout'}`}>
       <div className="background-glows">
         <div className="glow-circle glow-1"></div>
         <div className="glow-circle glow-2"></div>
@@ -137,41 +137,20 @@ function App() {
       <div className="grid-overlay"></div>
 
       <div className="app-container">
-        {/* Brand Header */}
-        <div className="header-container">
-          <div className="brand-badge">
-            <span className="brand-badge-dot"></span>
-            <span>Cognitive Search Engine</span>
+        
+        {/* Search Engine Header */}
+        <header className="search-header">
+          {hasSearched && (
+            <button className="header-back-button" onClick={handleBack} title="Go back to home">
+              <ChevronLeft size={20} />
+            </button>
+          )}
+          
+          <div className="logo-container" onClick={handleBack}>
+            <span className="brand-dot"></span>
+            <span className="logo-text">Cognitive Search</span>
           </div>
-          <h1 className="main-title">Q&A Knowledge Base</h1>
-          <p className="main-subtitle">Locally-powered vector and token matching index</p>
-
-
-        </div>
-
-        {/* Suggested Quick Searches (Hidden after search is done or when searching) */}
-        {!hasSearched && !loading && (
-          <div className={`suggestions-container ${fadeSuggestions ? 'fade-in' : 'fade-out'}`}>
-            {currentSuggestions.map((q, idx) => (
-              <button
-                key={idx}
-                className="suggestion-pill"
-                onClick={(e) => {
-                  setQuery(q);
-                  handleSearch(e, q);
-                }}
-              >
-                <Sparkles size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-                {q}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Control Configuration Panel */}
-
-        {!hasSearched && !loading ? (
-          // Search bar for new search
+          
           <form onSubmit={(e) => handleSearch(e)} className="search-form">
             <div className="search-input-wrapper">
               <input
@@ -180,83 +159,107 @@ function App() {
                 className="search-input"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Type your query and press Enter..."
+                placeholder="Ask your question..."
                 autoFocus
               />
               <button type="submit" className="search-icon-btn">
-                <Search size={22} />
+                <Search size={20} />
               </button>
             </div>
           </form>
-        ) : (
-          // Results or Loading Container
-          <div className="results-container">
+        </header>
+
+        {/* Home View specific content */}
+        {!hasSearched && !loading && (
+          <div className="home-content">
+            <p className="home-subtitle">Locally-powered vector and token matching index</p>
+            
+            {/* Suggested Quick Searches */}
+            <div className={`suggestions-container ${fadeSuggestions ? 'fade-in' : 'fade-out'}`}>
+              {currentSuggestions.map((q, idx) => (
+                <button
+                  key={idx}
+                  className="suggestion-pill"
+                  onClick={(e) => {
+                    setQuery(q);
+                    handleSearch(e, q);
+                  }}
+                >
+                  <Sparkles size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Results View content */}
+        {(hasSearched || loading) && (
+          <div className="results-layout-body">
             {loading ? (
               <div className="loading-container">
                 <div className="loading-spinner"></div>
                 <div className="loading-text">Analyzing query similarity...</div>
               </div>
             ) : (
-              <>
-                <div className="results-header-wrapper">
-                  <h2 className="results-title">
-                    Search Results for "{query}"
-                  </h2>
-                  <button className="back-button" onClick={handleBack}>
-                    <ChevronLeft size={16} />
-                    New Search
-                  </button>
-                </div>
-
-                {results.length > 0 ? (
-                  results.map((match, idx) => {
-                    const confidence = getConfidenceLevel(match.score);
-                    return (
-                      <div key={idx} className="result-card">
-                        <div className="card-header">
-                          <h3 className="matched-question">{match.matched_question}</h3>
-                          <span className={`confidence-badge ${confidence.class}`}>
-                            {confidence.label} ({match.score.toFixed(1)}%)
-                          </span>
-                        </div>
-                        <div className="answer-wrapper">
-                          <p className="answer">{match.answer}</p>
-                        </div>
-                        <div className="card-actions">
-                          <button
-                            className={`copy-btn ${copiedIndex === idx ? 'copied' : ''}`}
-                            onClick={() => handleCopy(match.answer, idx)}
-                          >
-                            {copiedIndex === idx ? (
-                              <>
-                                <Check size={14} />
-                                Copied!
-                              </>
-                            ) : (
-                              <>
-                                <Copy size={14} />
-                                Copy Answer
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="no-results">
-                    <HelpCircle size={40} style={{ marginBottom: '1rem', color: '#64748b' }} />
-                    <p>No answers found matching your criteria.</p>
-                    <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
-                      Try lowering the similarity threshold or refining your question.
-                    </p>
+              <div className="results-content-wrapper">
+                <div className="results-main">
+                  <div className="results-info">
+                    About {results.length} results found matching "{query}"
                   </div>
-                )}
-              </>
+
+                  {results.length > 0 ? (
+                    <div className="results-list">
+                      {results.map((match, idx) => {
+                        const confidence = getConfidenceLevel(match.score);
+                        return (
+                          <div key={idx} className="search-result-item">
+                            <div className="result-header">
+                              <span className="result-breadcrumb">Q&A Knowledge Base &gt; Answer</span>
+                              <h3 className="matched-question" onClick={() => { setQuery(match.matched_question); handleSearch(null, match.matched_question); }}>{match.matched_question}</h3>
+                              <span className={`confidence-badge ${confidence.class}`}>
+                                {confidence.label} ({match.score.toFixed(1)}%)
+                              </span>
+                            </div>
+                            <div className="result-answer">
+                              <p className="answer-text">{match.answer}</p>
+                            </div>
+                            <div className="result-actions">
+                              <button
+                                className={`copy-btn ${copiedIndex === idx ? 'copied' : ''}`}
+                                onClick={() => handleCopy(match.answer, idx)}
+                              >
+                                {copiedIndex === idx ? (
+                                  <>
+                                    <Check size={13} style={{ marginRight: '4px' }} />
+                                    Copied!
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy size={13} style={{ marginRight: '4px' }} />
+                                    Copy Answer
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="no-results">
+                      <HelpCircle size={40} style={{ marginBottom: '1rem', color: '#64748b' }} />
+                      <p>No answers found matching your criteria.</p>
+                      <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
+                        Try dynamic suggestions or refining your question.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         )}
-
 
       </div>
     </div>
