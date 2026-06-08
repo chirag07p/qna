@@ -107,6 +107,30 @@ async def stats_endpoint():
         "columns": list(answers_df.columns)
     }
 
+# Endpoint to dynamically get suggestions list from questions.xlsx or answers.xlsx
+@app.get("/api/suggestions")
+async def suggestions_endpoint():
+    try:
+        q_path = os.path.join(os.path.dirname(__file__), "data", "questions.xlsx")
+        if os.path.exists(q_path):
+            df = pd.read_excel(q_path)
+            q_col = df.columns[0]
+            questions = [str(q).strip() for q in df[q_col].dropna().tolist() if str(q).strip()]
+            if questions:
+                return {"status": "success", "questions": questions}
+    except Exception as e:
+        print(f"Failed to read questions.xlsx: {e}")
+    
+    if answers_df is not None:
+        try:
+            cname2 = answers_df.columns[0]
+            questions = [str(q).strip() for q in answers_df[cname2].dropna().tolist() if str(q).strip()]
+            return {"status": "success", "questions": questions}
+        except Exception as e:
+            print(f"Failed to fallback to answers: {e}")
+            
+    return {"status": "error", "message": "Could not load suggestions."}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
