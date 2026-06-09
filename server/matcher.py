@@ -1,4 +1,5 @@
 import re
+from collections import Counter
 import numpy as np
 import pandas as pd
 from rapidfuzz import fuzz
@@ -33,30 +34,41 @@ def calculate_tfidf(query:list[str],reference:list[str])->np.ndarray:
     query_mat = vectorizer.transform([cleaner(q) for q in query])
     return cs(query_mat, ref_mat) * 100
 
-def get_topic_words(text: str) -> set[str]:
+def get_topic_words(text: str, generic: set[str]) -> set[str]:
     """Extract non-generic domain-specific keywords to boost accurate domain matching."""
-    generic = {"issue", "issues", "error", "errors", "problem", "problems", "failed",
-     "failure", "procedure", "occurred", "facing", "question", "answer", "help", "support",
-     "need", "get", "how", "to", "in", "on", "with", "for", "a", "an", "the", "i", "my",
-     "me", "we", "our", "you", "your", "am", "is", "are", "was", "were", "be", "been",
-     "being", "have", "has", "had", "do", "does", "did", "of", "at", "by", "from", "up",
-     "about", "into", "over"}
     return set(re.findall(r'\b\w+\b', cleaner(text))) - generic
 
 def matching(sheet1, sheet2, cname1, cname2, ans_cname, threshold, top_k=3):
     """ Pairs rows, returns the Top K matches for each query, and identifies conflicts where multiple strong solutions exist."""
+    # Dynamically compute generic words from sheet2 questions (appearing in > 10% of reference questions)
+    s2_questions = sheet2[cname2].dropna().tolist()
+    word_doc_counts = Counter()
+    for q in s2_questions:
+        unique_words = set(re.findall(r'\b\w+\b', cleaner(str(q))))
+        word_doc_counts.update(unique_words)
+    
+    freq_threshold = max(1, len(s2_questions) * 0.10)
+    generic = {word for word, count in word_doc_counts.items() if count > freq_threshold}
+    
+    # Pre-seed with basic stop words to ensure core English grammar structures are always ignored
+    basic_stop_words = {"to", "in", "on", "with", "for", "a", "an", "the", "i", "my", "me", "we", 
+                        "our", "you", "your", "of", "at", "by", "from", "up", "about", "into", "over", 
+                        "is", "are", "was", "were", "am", "be", "been", "do", "does", "did", "have", 
+                        "has", "had", "how", "what", "who", "where", "when", "why", "which", "can", 
+                        "should", "would", "could", "there"}
+    generic.update(basic_stop_words)
+
     matched=[]
     s1_questions=sheet1[cname1].tolist()
-    s2_questions=sheet2[cname2].tolist()
     # Calculate TF-IDF matrix: shape is (len(s1_questions), len(s2_questions))
     tfidf=calculate_tfidf(s1_questions,s2_questions)
     for i in range(len(s1_questions)):
         # we filter using TF-IDF scores first on the top 10 TF-IDF candidates.
         top_kc = np.argsort(tfidf[i])[::-1][:10]
         row = []
-        q1_topics = get_topic_words(s1_questions[i])
+        q1_topics = get_topic_words(s1_questions[i], generic)
         for j in top_kc:
-            s2_topics = get_topic_words(s2_questions[j])
+            s2_topics = get_topic_words(s2_questions[j], generic)
             fuzzy = calculate_fuzz(s1_questions[i], s2_questions[j])
             # Hybrid combined score (0.6 TF-IDF + 0.4 Fuzzy)
             score = (tfidf[i][j]*0.6) + (fuzzy*0.4)
