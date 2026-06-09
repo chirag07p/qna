@@ -4,13 +4,9 @@ from fastapi import FastAPI as fa, HTTPException as ht
 from fastapi.middleware.cors import CORSMiddleware as co
 from pydantic import BaseModel as bm
 from typing import List as li, Optional as op
-<<<<<<< HEAD
 from dotenv import load_dotenv
 import mysql.connector
-
-=======
 import uvicorn
->>>>>>> 99c7a74d7d68ed747b3207ccc225f50b6b72834b
 # Import the matching engine
 from matcher import matching
 
@@ -146,7 +142,6 @@ async def stats_endpoint():
         "columns": list(answers_df.columns)
     }
 
-<<<<<<< HEAD
 # Endpoint to reload knowledge base
 @app.post("/api/reload")
 async def reload_endpoint():
@@ -162,7 +157,7 @@ async def reload_endpoint():
     else:
         raise ht(status_code=500, detail="Failed to reload knowledge base from MySQL database.")
 
-# Endpoint to dynamically get suggestions list from MySQL database
+# Endpoint to dynamically get suggestions list strictly from MySQL database
 @app.get("/api/suggestions")
 async def suggestions_endpoint():
     try:
@@ -178,50 +173,9 @@ async def suggestions_endpoint():
         questions = [row[0] for row in cursor.fetchall() if row[0]]
         cursor.close()
         conn.close()
-        if questions:
-            return {"status": "success", "questions": questions}
+        return {"status": "success", "questions": questions}
     except Exception as e:
-        print(f"Failed to fetch suggestions from MySQL: {e}")
-        
-    # Fallback to answers_df loaded in memory
-    if answers_df is not None:
-        try:
-            questions = [str(q).strip() for q in answers_df[cname2].dropna().tolist() if str(q).strip()]
-=======
-# Endpoint to dynamically get suggestions list from questions.xlsx or answers.xlsx
-@app.get("/api/suggestions")
-async def suggestions_endpoint():
-    try:
-        # Check if the questions.xlsx file exists in the data directory
-        q_path = os.path.join(os.path.dirname(__file__), "data", "questions.xlsx")
-        if os.path.exists(q_path):
-            df = pd.read_excel(q_path)
-            # Check if the questions sheet has at least 1 column
-            if len(df.columns) < 1:
-                raise ValueError("The questions sheet must contain at least 1 column (Question).")
-            # Get the column name for the question column
-            q_col = df.columns[0]
-            # Extract all questions from the question column
-            questions = [str(q).strip() for q in df[q_col].dropna().tolist() if str(q).strip()]
-            # Return the list of questions
-            if questions:
-                return {"status": "success", "questions": questions}
-    except Exception as e:
-        print(f"Failed to read questions.xlsx: {e}")
-    
-    if answers_df is not None:
-        try:
-            # Get the column name for the question column
-            cname2 = answers_df.columns[0]
-            # Extract all questions from the question column
-            questions = [str(q).strip() for q in answers_df[cname2].dropna().tolist() if str(q).strip()]
-            # Return the list of questions
->>>>>>> 99c7a74d7d68ed747b3207ccc225f50b6b72834b
-            return {"status": "success", "questions": questions}
-        except Exception as e:
-            print(f"Failed to fallback to answers: {e}")
-            
-    return {"status": "error", "message": "Could not load suggestions."}
+        raise ht(status_code=500, detail=f"Failed to fetch suggestions from MySQL database: {str(e)}")
 
 if __name__ == "__main__":
 

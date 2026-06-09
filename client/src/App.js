@@ -82,10 +82,10 @@ function App() {
     const trimmedQuery = query.trim().toLowerCase();
     if (!trimmedQuery) return [];
     
-    // Filter suggestions that strictly start with the typed query (excluding exact matches)
+    // Filter suggestions that contain the typed query (excluding exact matches)
     return allSuggestedQueries.filter(q => {
       const qLow = q.toLowerCase();
-      return qLow.startsWith(trimmedQuery) && qLow !== trimmedQuery;
+      return qLow.includes(trimmedQuery) && qLow !== trimmedQuery;
     }).slice(0, 5); // limit to top 5 suggestions
   }, [query, allSuggestedQueries]);
 

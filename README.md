@@ -1,6 +1,6 @@
-# Excel Q&A Search Assistant
+# MySQL Q&A Search Assistant
 
-A complete, high-performance web application featuring a **Python FastAPI backend** and a beautiful **React frontend** to perform approximate semantic and fuzzy matching of user queries against a preloaded Excel Q&A spreadsheet.
+A complete, high-performance web application featuring a **Python FastAPI backend** and a beautiful **React frontend** to perform approximate semantic and fuzzy matching of user queries against a MySQL Q&A database.
 
 ---
 
@@ -25,8 +25,7 @@ qna/
 │   ├── README.md         # React-specific boilerplate documentation
 │   └── package.json
 ├── server/               # FastAPI Python Backend
-│   ├── data/
-│   │   └── answers.xlsx  # Preloaded Q&A knowledge base
+│   ├── db_migration.py   # Database setup & seeding script
 │   ├── matcher.py        # TF-IDF & Fuzzy hybrid matching engine
 │   ├── main.py           # REST APIs (Stats & Query resolution)
 │   └── requirements.txt  # Python backend dependencies
@@ -57,18 +56,18 @@ graph TD
         KeywordBoost["Domain Keyword Boosting<br>(Regex Overlap Check)"]:::serverStyle
     end
 
-    subgraph Data ["📂 Data Store"]
-        ExcelAnswers["answers.xlsx<br>(Preloaded Q&A Database)"]:::dataStyle
-        ExcelQuestions["questions.xlsx<br>(Source Questions Dataset)"]:::dataStyle
+    subgraph Data ["📂 Database Store (MySQL)"]
+        MySQL_KB["knowledge_base Table<br>(Q&A Database)"]:::dataStyle
+        MySQL_SQ["source_questions Table<br>(Source Questions)"]:::dataStyle
     end
 
     %% Flows & Interactions
     UI -->|1. GET /api/stats| API
     UI -->|2. POST /api/query| API
     
-    API -->|Load Q&A Knowledge Base| ExcelAnswers
+    API -->|Load Q&A Knowledge Base| MySQL_KB
     
-    ExcelQuestions -.->|Batch Query Source / Reference| Matcher
+    MySQL_SQ -.->|Batch Query Source / Reference| Matcher
     
     API -->|Invoke Matcher| Matcher
     Matcher -->|Vector Similarity| TFIDF
@@ -86,32 +85,32 @@ graph TD
     %% Custom Class assignments
     class UI clientStyle;
     class API,Matcher,TFIDF,Fuzzy,KeywordBoost serverStyle;
-    class ExcelAnswers,ExcelQuestions dataStyle;
+    class MySQL_KB,MySQL_SQ dataStyle;
 ```
 
 ---
 
 ## 🖥️ Backend (Server) Deep Dive
 
-The backend is built with **FastAPI** to serve search results in real time from the preloaded spreadsheet database.
+The backend is built with **FastAPI** to serve search results in real time from the MySQL database.
 
 ### Tech Stack & Dependencies:
 * **Python 3.10+**
 * **FastAPI & Uvicorn**: For high-performance asynchronous API routing.
-* **Pandas & OpenPyXL**: For reading and parsing Excel files.
+* **Pandas & MySQL Connector**: For reading data and running matching queries against MySQL.
 * **Scikit-Learn**: For TF-IDF Vectorization and Cosine Similarity computations.
 * **RapidFuzz**: For ultra-fast Levenshtein token similarity scores.
 
 ### REST API Endpoints:
 
 #### 1. `GET /api/stats`
-Retrieves metadata about the preloaded Excel knowledge base spreadsheet.
+Retrieves metadata about the preloaded knowledge base from MySQL.
 * **Response Body (`200 OK`)**:
   ```json
   {
     "status": "success",
-    "total_records": 24,
-    "columns": ["Question", "Answer"]
+    "total_records": 30,
+    "columns": ["question", "answer"]
   }
   ```
 
