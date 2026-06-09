@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import { Search, Sparkles, Copy, Check, ChevronLeft, HelpCircle } from 'lucide-react';
+import { Search, Sparkles, Copy, Check, HelpCircle } from 'lucide-react';
 import "./App.css";
 
 // App component for Q&A Search Assistant
@@ -76,12 +76,26 @@ function App() {
     return sliced;
   }, [suggestionIdx, allSuggestedQueries]);
 
+  // Autocomplete search suggestions while typing
+  const [showDropdown, setShowDropdown] = React.useState(false);
+  const autocompleteSuggestions = React.useMemo(() => {
+    const trimmedQuery = query.trim().toLowerCase();
+    if (!trimmedQuery) return [];
+    
+    // Filter suggestions that strictly start with the typed query (excluding exact matches)
+    return allSuggestedQueries.filter(q => {
+      const qLow = q.toLowerCase();
+      return qLow.startsWith(trimmedQuery) && qLow !== trimmedQuery;
+    }).slice(0, 5); // limit to top 5 suggestions
+  }, [query, allSuggestedQueries]);
+
   // Function to handle search
   const handleSearch = async (e, customQuery = null) => {
     if (e) e.preventDefault();
     const activeQuery = customQuery !== null ? customQuery : query;
     if (!activeQuery.trim()) return;
 
+    setShowDropdown(false);
     setLoading(true);
     setHasSearched(true);
 
@@ -155,7 +169,22 @@ function App() {
               type="text"
               className="search-input"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                if (e.target.value.trim()) {
+                  setShowDropdown(true);
+                } else {
+                  setShowDropdown(false);
+                }
+              }}
+              onFocus={() => {
+                if (query.trim()) {
+                  setShowDropdown(true);
+                }
+              }}
+              onBlur={() => {
+                setShowDropdown(false);
+              }}
               placeholder="Ask your question..."
               autoFocus
             />
@@ -163,6 +192,27 @@ function App() {
               <Search size={22} />
             </button>
           </div>
+
+          {/* Autocomplete Dropdown */}
+          {showDropdown && autocompleteSuggestions.length > 0 && (
+            <div className="autocomplete-dropdown">
+              {autocompleteSuggestions.map((suggestion, idx) => (
+                <div
+                  key={idx}
+                  className="autocomplete-item"
+                  onMouseDown={(e) => {
+                    e.preventDefault(); // Prevents input blur before click registers
+                    setQuery(suggestion);
+                    handleSearch(null, suggestion);
+                    setShowDropdown(false);
+                  }}
+                >
+                  <Search size={14} className="autocomplete-icon" />
+                  <span className="autocomplete-text">{suggestion}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </form>
 
         {/* Suggested Quick Searches */}

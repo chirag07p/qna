@@ -4,7 +4,7 @@ from fastapi import FastAPI as fa, HTTPException as ht
 from fastapi.middleware.cors import CORSMiddleware as co
 from pydantic import BaseModel as bm
 from typing import List as li, Optional as op
-
+import uvicorn
 # Import the matching engine
 from matcher import matching
 
@@ -111,11 +111,18 @@ async def stats_endpoint():
 @app.get("/api/suggestions")
 async def suggestions_endpoint():
     try:
+        # Check if the questions.xlsx file exists in the data directory
         q_path = os.path.join(os.path.dirname(__file__), "data", "questions.xlsx")
         if os.path.exists(q_path):
             df = pd.read_excel(q_path)
+            # Check if the questions sheet has at least 1 column
+            if len(df.columns) < 1:
+                raise ValueError("The questions sheet must contain at least 1 column (Question).")
+            # Get the column name for the question column
             q_col = df.columns[0]
+            # Extract all questions from the question column
             questions = [str(q).strip() for q in df[q_col].dropna().tolist() if str(q).strip()]
+            # Return the list of questions
             if questions:
                 return {"status": "success", "questions": questions}
     except Exception as e:
@@ -123,8 +130,11 @@ async def suggestions_endpoint():
     
     if answers_df is not None:
         try:
+            # Get the column name for the question column
             cname2 = answers_df.columns[0]
+            # Extract all questions from the question column
             questions = [str(q).strip() for q in answers_df[cname2].dropna().tolist() if str(q).strip()]
+            # Return the list of questions
             return {"status": "success", "questions": questions}
         except Exception as e:
             print(f"Failed to fallback to answers: {e}")
@@ -132,5 +142,5 @@ async def suggestions_endpoint():
     return {"status": "error", "message": "Could not load suggestions."}
 
 if __name__ == "__main__":
-    import uvicorn
+
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
