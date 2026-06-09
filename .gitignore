@@ -1,0 +1,13 @@
+# Python virtual environment
+.venv/
+
+# Node modules and build
+node_modules/
+build/
+
+# Excel Q&A data files
+*.xlsx
+
+# Python bytecode
+__pycache__/
+*.py[cod]
