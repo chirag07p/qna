@@ -31,6 +31,71 @@ app.add_middleware(
     allow_headers=["*"], # Allows all headers
 )
 
+def initialize_db_and_seed():
+    try:
+        print("Checking/Initializing database and tables...")
+        # Connect to MySQL first without database to verify/create database
+        conn = mysql.connector.connect(
+            host=DB_HOST,
+            port=DB_PORT,
+            user=DB_USER,
+            password=DB_PASSWORD
+        )
+        cursor = conn.cursor()
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
+        cursor.close()
+        conn.close()
+
+        # Connect with the specific database name
+        conn = mysql.connector.connect(
+            host=DB_HOST,
+            port=DB_PORT,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB_NAME
+        )
+        cursor = conn.cursor()
+
+        # Create knowledge_base table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS knowledge_base (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            question TEXT NOT NULL,
+            answer TEXT NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        """)
+
+        # Create source_questions table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS source_questions (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            question TEXT NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        """)
+
+        # Create question_matches table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS question_matches (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            source_question_id INT,
+            source_question TEXT NOT NULL,
+            matched_question TEXT NOT NULL,
+            matched_answer TEXT NOT NULL,
+            score FLOAT NOT NULL,
+            accuracy_level VARCHAR(20) NOT NULL,
+            FOREIGN KEY (source_question_id) REFERENCES source_questions(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        """)
+
+        cursor.close()
+        conn.close()
+        print("Database schema verification successful.")
+    except Exception as e:
+        print(f"Error during database initialization: {e}")
+
+# Run database setup verification
+initialize_db_and_seed()
+
 # Load Knowledge Base function
 def load_knowledge_base():
     try:

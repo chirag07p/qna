@@ -25,9 +25,8 @@ qna/
 │   ├── README.md         # React-specific boilerplate documentation
 │   └── package.json
 ├── server/               # FastAPI Python Backend
-│   ├── db_migration.py   # Database setup & seeding script
 │   ├── matcher.py        # TF-IDF & Fuzzy hybrid matching engine
-│   ├── main.py           # REST APIs (Stats & Query resolution)
+│   ├── main.py           # REST APIs (Stats, Auto-DB setup, Query resolution)
 │   └── requirements.txt  # Python backend dependencies
 └── README.md             # Consolidated project documentation (This file)
 ```
