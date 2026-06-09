@@ -275,12 +275,7 @@ body {
   color: var(--link-color);
   font-weight: 600;
   margin: 0;
-  cursor: pointer;
   line-height: 1.35;
-}
-
-.matched-question:hover {
-  text-decoration: underline;
 }
 
 .confidence-badge {

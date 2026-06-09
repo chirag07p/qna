@@ -82,10 +82,10 @@ function App() {
     const trimmedQuery = query.trim().toLowerCase();
     if (!trimmedQuery) return [];
     
-    // Filter suggestions that strictly start with the typed query (excluding exact matches)
+    // Filter suggestions that contain the typed query (excluding exact matches)
     return allSuggestedQueries.filter(q => {
       const qLow = q.toLowerCase();
-      return qLow.startsWith(trimmedQuery) && qLow !== trimmedQuery;
+      return qLow.includes(trimmedQuery) && qLow !== trimmedQuery;
     }).slice(0, 5); // limit to top 5 suggestions
   }, [query, allSuggestedQueries]);
 
@@ -257,7 +257,7 @@ function App() {
                         <div key={idx} className="search-result-card">
                           <div className="card-header">
                             <span className="result-breadcrumb">Q&A Knowledge Base</span>
-                            <h3 className="matched-question" onClick={() => { setQuery(match.matched_question); handleSearch(null, match.matched_question); }}>{match.matched_question}</h3>
+                            <h3 className="matched-question">{match.matched_question}</h3>
                             <span className={`confidence-badge ${confidence.class}`}>
                               {confidence.label} ({match.score.toFixed(1)}%)
                             </span>
