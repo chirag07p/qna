@@ -257,7 +257,7 @@ function App() {
                         <div key={idx} className="search-result-card">
                           <div className="card-header">
                             <span className="result-breadcrumb">Q&A Knowledge Base</span>
-                            <h3 className="matched-question" onClick={() => { setQuery(match.matched_question); handleSearch(null, match.matched_question); }}>{match.matched_question}</h3>
+                            <h3 className="matched-question">{match.matched_question}</h3>
                             <span className={`confidence-badge ${confidence.class}`}>
                               {confidence.label} ({match.score.toFixed(1)}%)
                             </span>

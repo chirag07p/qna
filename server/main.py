@@ -106,7 +106,11 @@ def load_knowledge_base():
             password=DB_PASSWORD,
             database=DB_NAME
         )
-        df = pd.read_sql("SELECT question, answer FROM knowledge_base", conn)
+        cursor = conn.cursor()
+        cursor.execute("SELECT question, answer FROM knowledge_base")
+        rows = cursor.fetchall()
+        df = pd.DataFrame(rows, columns=["question", "answer"])
+        cursor.close()
         conn.close()
         
         if df.empty:
