@@ -153,10 +153,16 @@ class QueryResponse(bm):
 # Endpoint for querying the knowledge base
 @app.post("/api/query", response_model=QueryResponse)
 async def query_endpoint(req: QueryRequest):
-    if answers_df is None:# Check if the knowledge base is loaded
+    global answers_df, cname2, ans_cname
+    if answers_df is None:  # Check if the knowledge base is loaded, and try to load it dynamically
+        answers_df = load_knowledge_base()
+        if answers_df is not None:
+            cname2, ans_cname = answers_df.columns[0], answers_df.columns[1]
+
+    if answers_df is None:
         raise ht(status_code=500, detail="Knowledge base not loaded.")
     
-    if not req.query.strip():# Check if the query is empty
+    if not req.query.strip():  # Check if the query is empty
         return QueryResponse(query=req.query, matches=[])
 
     # Determine numeric threshold based on accuracy level or fallback to request parameter
