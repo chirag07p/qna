@@ -29,10 +29,13 @@ def calculate_tfidf(query:list[str],reference:list[str])->np.ndarray:
     """
     if not query or not reference:
         return np.zeros((len(query),len(reference)))
-    vectorizer = Tf(stop_words='english', norm='l2')
-    ref_mat = vectorizer.fit_transform([cleaner(r) for r in reference])
-    query_mat = vectorizer.transform([cleaner(q) for q in query])
-    return cs(query_mat, ref_mat) * 100
+    try:
+        vectorizer = Tf(stop_words='english', norm='l2')
+        ref_mat = vectorizer.fit_transform([cleaner(r) for r in reference])
+        query_mat = vectorizer.transform([cleaner(q) for q in query])
+        return cs(query_mat, ref_mat) * 100
+    except ValueError:
+        return np.zeros((len(query), len(reference)))
 
 def get_topic_words(text: str, generic: set[str]) -> set[str]:
     """Extract non-generic domain-specific keywords to boost accurate domain matching."""
@@ -40,8 +43,10 @@ def get_topic_words(text: str, generic: set[str]) -> set[str]:
 
 def matching(sheet1, sheet2, cname1, cname2, ans_cname, threshold, top_k=3):
     """ Pairs rows, returns the Top K matches for each query, and identifies conflicts where multiple strong solutions exist."""
+    # Drop rows where the question column is null/NaN to ensure matching indices
+    sheet2_clean = sheet2.dropna(subset=[cname2]).reset_index(drop=True)
     # Dynamically compute generic words from sheet2 questions (appearing in > 10% of reference questions)
-    s2_questions = sheet2[cname2].dropna().tolist()
+    s2_questions = sheet2_clean[cname2].tolist()
     word_doc_counts = Counter()
     for q in s2_questions:
         unique_words = set(re.findall(r'\b\w+\b', cleaner(str(q))))
@@ -81,7 +86,7 @@ def matching(sheet1, sheet2, cname1, cname2, ans_cname, threshold, top_k=3):
             
             if score >= threshold:
                 # Retrieve the answer value and handle null/NaN values safely
-                val = sheet2.iloc[j][ans_cname]
+                val = sheet2_clean.iloc[j][ans_cname]
                 anss = "" if pd.isna(val) else str(val)
                 # Store the matched question, answer, and similarity score
                 row.append({
