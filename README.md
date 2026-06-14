@@ -180,14 +180,12 @@ Builds the app for production to the `build` folder, bundling and optimizing Rea
 
 The matching engine matches query questions with reference questions using a combination of TF-IDF Cosine Similarity and RapidFuzz fuzzy ratios.
 
+### Typo-Tolerant Candidate Pre-Selection
+To handle cases where a query has severe typos (such as `resett passwrd`), the standard TF-IDF step would return a similarity score of `0.0`. 
+* **Fuzzy Candidate Fallback**: When the maximum TF-IDF score is `0.0`, the system automatically falls back to selecting the top 10 candidates based on a fuzzy ranking rather than defaulting to the first 10 documents in the database. This ensures relevant documents undergo the full Levenshtein evaluation.
+
 ### Domain Keyword Scoring Rule
-Non-generic keywords (e.g., `login`, `email`, `crash`) are extracted from both the query and target reference strings using regex, filtering out 40+ common helper/stop words:
-```python
-# Boost score if domain keywords match, otherwise penalize if they don't overlap
-if q1_topics & s2_topics:
-    score = min(score + 35.0, 100.0)
-else:
-    score = max(score - 25.0, 0.0)
-```
-* **Boost (+35.0 points)**: Granted if there is a non-empty set intersection (`&`) between domain keywords in the query and reference.
-* **Penalty (-25.0 points)**: Applied if topic sets fail to overlap or mismatch, preventing false-positives.
+Non-generic keywords (e.g., `login`, `email`, `crash`) are extracted from both the query and target reference strings using regex, filtering out 40+ common helper/stop words.
+* **Fuzzy Overlap Check**: Instead of checking for a strict exact match intersection between topic keywords, the engine compares them fuzzily. If any keyword in the query matches a keyword in the reference with $\ge 75\%$ similarity (e.g., matching `resett` $\rightarrow$ `reset`), it is considered an overlap.
+* **Boost (+35.0 points)**: Granted if there is a keyword overlap (either exact or fuzzy) between the query and reference.
+* **Penalty (-25.0 points)**: Applied if topic sets fail to overlap, preventing false-positives.
