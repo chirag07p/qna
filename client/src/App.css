@@ -1,6 +1,6 @@
 /* Single-Page Centered Search Engine Styling System */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-
+/* root variables */
 :root {
   --bg-color: #ffffff;
   --text-primary: #1a1f2c;
@@ -10,7 +10,7 @@
   --cyan-accent: #0ea5e9;
   --card-shadow: 0 1px 6px rgba(32,33,36,0.2);
 }
-
+/* body styles*/
 body {
   margin: 0;
   padding: 0;
@@ -20,17 +20,17 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
-
+/* layout styles */
 .app-layout {
   position: relative;
   min-height: 100vh;
   width: 100%;
 }
-
+/* background styles */
 .background-glows, .grid-overlay {
   display: none;
 }
-
+/* container styles */
 .app-container {
   max-width: 700px;
   margin: 0 auto;
@@ -45,7 +45,7 @@ body {
   text-align: center;
   margin-bottom: 2.5rem;
 }
-
+/* logo styles*/
 .logo-container {
   display: flex;
   align-items: center;
@@ -53,7 +53,7 @@ body {
   gap: 0.75rem;
   cursor: pointer;
 }
-
+/* brand dot styles */
 .brand-dot {
   width: 10px;
   height: 10px;
@@ -62,7 +62,7 @@ body {
   box-shadow: 0 0 10px var(--cyan-accent);
   animation: pulse 2s infinite;
 }
-
+/* logo text styles*/
 .logo-text {
   font-size: 3.25rem;
   font-weight: 800;
@@ -70,7 +70,7 @@ body {
   letter-spacing: -0.04em;
   line-height: 1;
 }
-
+/* search subtitle styles */
 .search-subtitle {
   color: var(--text-secondary);
   font-size: 1.05rem;
@@ -84,13 +84,13 @@ body {
   margin: 0 0 1.5rem 0;
   position: relative;
 }
-
+/* search input wrapper styles */
 .search-input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
-
+/* search input styles */
 .search-input {
   width: 100%;
   background: #ffffff;
@@ -103,13 +103,13 @@ body {
   box-sizing: border-box;
   transition: box-shadow 0.2s, border-color 0.2s;
 }
-
+/* search input focus and hover styles */
 .search-input:focus,
 .search-input:hover {
   border-color: transparent;
   box-shadow: 0 1px 6px rgba(32,33,36,0.28);
 }
-
+/* search icon button styles */
 .search-icon-btn {
   position: absolute;
   right: 1.5rem;
@@ -137,7 +137,7 @@ body {
   overflow: hidden;
   box-sizing: border-box;
 }
-
+/* autocomplete item styles */
 .autocomplete-item {
   display: flex;
   align-items: center;
@@ -146,16 +146,16 @@ body {
   cursor: pointer;
   transition: background-color 0.15s;
 }
-
+/* autocomplete item hover styles */
 .autocomplete-item:hover {
   background-color: #f1f5f9;
 }
-
+/* autocomplete icon styles */
 .autocomplete-icon {
   color: var(--text-secondary);
   flex-shrink: 0;
 }
-
+/* autocomplete text styles */
 .autocomplete-text {
   color: var(--text-primary);
   font-size: 0.95rem;
@@ -164,7 +164,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
+/* suggestion highlight styles */
 .suggestion-highlight {
   color: var(--cyan-accent);
   font-weight: 700;
@@ -179,17 +179,17 @@ body {
   margin-bottom: 2rem;
   transition: opacity 0.3s, transform 0.3s;
 }
-
+/* suggestions container fade in styles */
 .suggestions-container.fade-in {
   opacity: 1;
   transform: translateY(0);
 }
-
+/* suggestions container fade out styles */
 .suggestions-container.fade-out {
   opacity: 0;
   transform: translateY(-4px);
 }
-
+/* suggestion pill styles */
 .suggestion-pill {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
@@ -201,7 +201,7 @@ body {
   cursor: pointer;
   transition: all 0.2s;
 }
-
+/* suggestion pill hover styles */
 .suggestion-pill:hover {
   background: #f1f5f9;
   border-color: #cbd5e1;
@@ -215,7 +215,7 @@ body {
   margin-top: 1rem;
   animation: fadeInUp 0.4s ease-out;
 }
-
+/* results info bar styles */
 .results-info-bar {
   display: flex;
   justify-content: space-between;
@@ -226,7 +226,7 @@ body {
   border-bottom: 1px solid #e2e8f0;
   padding-bottom: 0.75rem;
 }
-
+/* clear search button styles */
 .clear-search-btn {
   background: none;
   border: none;
@@ -235,11 +235,11 @@ body {
   cursor: pointer;
   font-size: 0.85rem;
 }
-
+/* clear search button hover styles */
 .clear-search-btn:hover {
   text-decoration: underline;
 }
-
+/* results list styles */
 .results-list {
   display: flex;
   flex-direction: column;
@@ -258,18 +258,18 @@ body {
   flex-direction: column;
   gap: 0.75rem;
 }
-
+/* search result card hover styles */
 .search-result-card:hover {
   border-color: #cbd5e1;
   box-shadow: 0 4px 16px rgba(15,23,42,0.04);
 }
-
+/* result breadcrumb styles */
 .result-breadcrumb {
   font-size: 0.75rem;
   color: var(--text-secondary);
   display: block;
 }
-
+/* matched question styles */
 .matched-question {
   font-size: 1.15rem;
   color: var(--link-color);
@@ -277,7 +277,7 @@ body {
   margin: 0;
   line-height: 1.35;
 }
-
+/* confidence badge styles */
 .confidence-badge {
   font-size: 0.65rem;
   font-weight: 700;
@@ -290,31 +290,33 @@ body {
   width: fit-content;
 }
 
+/* confidence high styles */
 .confidence-high {
   background: rgba(16, 185, 129, 0.08);
   border-color: rgba(16, 185, 129, 0.2);
   color: #059669;
 }
 
+/* confidence mid styles */
 .confidence-mid {
   background: rgba(245, 158, 11, 0.08);
   border-color: rgba(245, 158, 11, 0.2);
   color: #d97706;
 }
-
+/* confidence low styles */
 .confidence-low {
   background: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.2);
   color: #dc2626;
 }
-
+/* result answer styles */
 .result-answer {
   background-color: #f8fafc;
   border-radius: 8px;
   padding: 1rem 1.25rem;
   border: 1px solid rgba(15,23,42,0.01);
 }
-
+/* answer text styles */
 .answer-text {
   color: #334155;
   font-size: 0.925rem;
@@ -328,7 +330,7 @@ body {
   display: flex;
   justify-content: flex-end;
 }
-
+/* Copy button styles */
 .copy-btn {
   background: transparent;
   border: 1px solid #cbd5e1;
@@ -342,13 +344,13 @@ body {
   display: inline-flex;
   align-items: center;
 }
-
+/* Copy button hover styles */
 .copy-btn:hover {
   background-color: #f1f5f9;
   color: var(--text-primary);
   border-color: #94a3b8;
 }
-
+/* Copy button success states */
 .copy-btn.copied {
   background-color: #e6f4ea;
   border-color: #c2e7c9;
@@ -362,7 +364,7 @@ body {
   align-items: center;
   padding: 3rem 0;
 }
-
+/* loading spinner styles */
 .loading-spinner {
   width: 32px;
   height: 32px;
@@ -372,12 +374,12 @@ body {
   animation: spin 0.8s linear infinite;
   margin-bottom: 1rem;
 }
-
+/* loading text styles */
 .loading-text {
   color: var(--text-secondary);
   font-size: 0.875rem;
 }
-
+/* no results styles */
 .no-results {
   background: #ffffff;
   border: 1px solid #dfe1e5;
@@ -386,24 +388,23 @@ body {
   text-align: center;
   color: var(--text-secondary);
 }
-
+/* no results paragraph styles */
 .no-results p {
   margin: 0 0 0.5rem 0;
   font-weight: 600;
   color: var(--text-primary);
 }
-
 /* Animations */
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
-
+/* Pulse animation styles */
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
-
+/* fadeInUp animation styles */
 @keyframes fadeInUp {
   from {
     opacity: 0;
