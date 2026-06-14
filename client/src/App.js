@@ -140,7 +140,7 @@ function App() {
     if (score >= 60) return { label: 'Mid Confidence', class: 'confidence-mid' };
     return { label: 'Low Confidence', class: 'confidence-low' };
   };
-
+  //Handles Suggestion rotation for better user experience
   return (
     <div className="app-layout">
       <div className="background-glows">

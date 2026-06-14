@@ -51,7 +51,7 @@ def matching(sheet1, sheet2, cname1, cname2, ans_cname, threshold, top_k=3):
     for q in s2_questions:
         unique_words = set(re.findall(r'\b\w+\b', cleaner(str(q))))
         word_doc_counts.update(unique_words)
-    
+    # Dynamic Stop Word Selection
     freq_threshold = max(1, len(s2_questions) * 0.10)
     generic = {word for word, count in word_doc_counts.items() if count > freq_threshold}
     
@@ -73,10 +73,12 @@ def matching(sheet1, sheet2, cname1, cname2, ans_cname, threshold, top_k=3):
         if np.max(tfidf[i]) < 1e-5:
             fuzzy_all = np.array([calculate_fuzz(s1_questions[i], q) for q in s2_questions])
             top_kc = np.argsort(fuzzy_all)[::-1][:10]
+        # Fuzzy Candidate Fallback
         else:
             top_kc = np.argsort(tfidf[i])[::-1][:10]
         row = []
         q1_topics = get_topic_words(s1_questions[i], generic)
+        # Scoring Logic
         for j in top_kc:
             s2_topics = get_topic_words(s2_questions[j], generic)
             fuzzy = calculate_fuzz(s1_questions[i], s2_questions[j])
@@ -93,7 +95,7 @@ def matching(sheet1, sheet2, cname1, cname2, ans_cname, threshold, top_k=3):
                         break
                 if has_overlap:
                     break
-
+            # Fuzzy Overlap Boost & Mismatch Penalty
             if has_overlap:
                 score = min(score + 35.0, 100.0)
             else:
@@ -118,6 +120,7 @@ def matching(sheet1, sheet2, cname1, cname2, ans_cname, threshold, top_k=3):
         conflict = len(row) >= 2 and row[0]["score"] >= threshold and row[1]["score"] >= threshold and abs(row[0]["score"] - row[1]["score"]) < 5.0
         # Convert row values safely (handling np.integer types)
         rowi = {}
+        # Safe Column Iteration
         for col in sheet1.columns:
             val = sheet1.iloc[i][col]
             if pd.isna(val):
