@@ -11,3 +11,9 @@ build/
 # Python bytecode
 __pycache__/
 *.py[cod]
+
+# Environment variables (secrets)
+.env
+.env.*
+!.env.example
+
