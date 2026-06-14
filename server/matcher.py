@@ -68,8 +68,13 @@ def matching(sheet1, sheet2, cname1, cname2, ans_cname, threshold, top_k=3):
     # Calculate TF-IDF matrix: shape is (len(s1_questions), len(s2_questions))
     tfidf=calculate_tfidf(s1_questions,s2_questions)
     for i in range(len(s1_questions)):
-        # we filter using TF-IDF scores first on the top 10 TF-IDF candidates.
-        top_kc = np.argsort(tfidf[i])[::-1][:10]
+        # If TF-IDF fails to find any word matches (e.g., due to typos like "resett passwrd"),
+        # we select candidates using fuzzy matching to ensure Levenshtein-based retrieval.
+        if np.max(tfidf[i]) < 1e-5:
+            fuzzy_all = np.array([calculate_fuzz(s1_questions[i], q) for q in s2_questions])
+            top_kc = np.argsort(fuzzy_all)[::-1][:10]
+        else:
+            top_kc = np.argsort(tfidf[i])[::-1][:10]
         row = []
         q1_topics = get_topic_words(s1_questions[i], generic)
         for j in top_kc:
@@ -78,8 +83,18 @@ def matching(sheet1, sheet2, cname1, cname2, ans_cname, threshold, top_k=3):
             # Hybrid combined score (0.6 TF-IDF + 0.4 Fuzzy)
             score = (tfidf[i][j]*0.6) + (fuzzy*0.4)
             
-            # Boost score if domain keywords match, otherwise penalize if they don't overlap
-            if q1_topics & s2_topics:
+            # Boost score if domain keywords match (either exactly or fuzzily to handle typos),
+            # otherwise penalize if they don't overlap.
+            has_overlap = False
+            for w1 in q1_topics:
+                for w2 in s2_topics:
+                    if w1 == w2 or (len(w1) > 3 and len(w2) > 3 and fuzz.ratio(w1, w2) >= 75.0):
+                        has_overlap = True
+                        break
+                if has_overlap:
+                    break
+
+            if has_overlap:
                 score = min(score + 35.0, 100.0)
             else:
                 score = max(score - 25.0, 0.0)
