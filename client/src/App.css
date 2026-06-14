@@ -1,5 +1,11 @@
 /* Single-Page Centered Search Engine Styling System */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+/* Global Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 /* root variables */
 :root {
   --bg-color: #ffffff;
@@ -24,18 +30,12 @@ body {
 .app-layout {
   position: relative;
   min-height: 100vh;
-  width: 100%;
-}
-/* background styles */
-.background-glows, .grid-overlay {
-  display: none;
 }
 /* container styles */
 .app-container {
   max-width: 700px;
   margin: 0 auto;
   padding: 4rem 1.5rem;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
 }
@@ -74,14 +74,12 @@ body {
 .search-subtitle {
   color: var(--text-secondary);
   font-size: 1.05rem;
-  margin-top: 0.75rem;
-  margin-bottom: 0;
+  margin: 0.75rem 0 0;
 }
 
 /* Search input styling */
 .search-form {
-  width: 100%;
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 1.5rem;
   position: relative;
 }
 /* search input wrapper styles */
@@ -100,7 +98,6 @@ body {
   font-size: 1.15rem;
   padding: 1.1rem 4rem 1.1rem 1.5rem;
   outline: none;
-  box-sizing: border-box;
   transition: box-shadow 0.2s, border-color 0.2s;
 }
 /* search input focus and hover styles */
@@ -135,7 +132,6 @@ body {
   z-index: 1000;
   margin-top: 6px;
   overflow: hidden;
-  box-sizing: border-box;
 }
 /* autocomplete item styles */
 .autocomplete-item {
@@ -390,7 +386,7 @@ body {
 }
 /* no results paragraph styles */
 .no-results p {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.5rem;
   font-weight: 600;
   color: var(--text-primary);
 }
