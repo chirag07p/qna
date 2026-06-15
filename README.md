@@ -22,7 +22,6 @@ qna/
 │   ├── src/
 │   │   ├── App.js        # Main UI Controller & Search Panel
 │   │   └── App.css       # Translucent dark-mode styling system
-│   ├── README.md         # React-specific boilerplate documentation
 │   └── package.json
 ├── server/               # FastAPI Python Backend
 │   ├── matcher.py        # TF-IDF & Fuzzy hybrid matching engine
